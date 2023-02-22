@@ -1,1 +1,21 @@
 # LightUpPuzzles
+
+- Light-up puzzles (also known as Akari) are grid puzzles developed by the company Nikoli first introduced in 2001.
+- In this project, we implement a solver for this light-up puzzles using the following algorithms:
+  - Back tracking
+  - Forward checking
+- Heuristics:
+  - Heuristic 1 (H1): Most Constrained Variable
+      - The heuristic selects the node with the least remaining options as the next move. The idea behind this is that picking such a node will result in earlier backtracking. If multiple nodes have the same minimum number of options, then one of them is selected randomly.
+  - Heuristic 2 (H2): Most Constraining Variable
+      - The heuristic chooses the node that causes the most reduction in options for other nodes as the next step. In other words, it selects the node that imposes the greatest restrictions on other nodes. If there are multiple nodes with equal potential to limit other nodes, one is selected randomly.
+  - Heuristic 3 (H3): Hybrid
+      - This heuristic will combine both H1 and H2.
+
+
+
+### To run the program: 
+- python algorithm_name.py -p input_name.txt -h heuristic
+  - algorithm_name: backtrack, forward_checking
+  - heuristics: H1, H2, H3
+- Ex: python backtracking.py -p samples.txt -h heuristics
