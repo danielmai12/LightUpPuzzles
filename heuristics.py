@@ -43,7 +43,7 @@ def h2(curr_state: 'List[List[str]]', available_cells: 'List[List[int]]' ):
             max_count = to_be_lit_up
         elif to_be_lit_up == max_count:
             cells.append(cell)
-    is_map_lit_up_and_clean_map(curr_state)
+    map_is_lit(curr_state)
     return cells
 
 

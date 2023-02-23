@@ -170,4 +170,22 @@ def edge_corner_constraints(puzzle, row, col):
 
     return constraint
 
+# Return True if map is lit up entirely, False otherwise
+# Removing all * symbols to be printed out.
+def map_is_lit(curr_state):
+
+    is_lit_up = True
+
+    # Iterate through all cells to look for _ symbol
+    # if we  see _, solution is not complete
+
+    for row in range(len(curr_state)):
+        for col in range(len(curr_state[row])):
+            if curr_state[row][col] == '_':
+                lit_up = False
+            elif curr_state[row][col] == '*':
+                curr_state[row][col] = '_'
+
+    return is_lit_up
+
 
