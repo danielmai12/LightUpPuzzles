@@ -1,9 +1,11 @@
 import os
 
 
+# Enums
 class CellState:
     BULB = 'b'
     EMPTY = '_'
+    LIGHT = '*'
 
 
 def read_file(filename):
@@ -39,38 +41,45 @@ def print_puzzle(puzzle):
 
 # Given the current state of the curr_state, with newly placed bulbs,
 # light up all cells in the same row and col that is not obstructed by wall using * symbols
-def light_state(curr_state):
+def light_up_puzzle(curr_state):
     """
-    :param curr_state:
+    :param
     :return:
     """
     # Iterate through each cell in the current state
-    for row in range( len(curr_state) ):
-        for col in range( len(curr_state[row]) ):
-            if curr_state[row][col] == 'b':
+    for row in range(len(curr_state)):
+        for col in range(len(curr_state[row])):
+            if curr_state[row][col] == CellState.BULB:
                 # At the position of the light bulb, light up all
-                travel_dist = 1;
+                travel_dist = 1
 
-                while row - travel_dist >= 0 and (curr_state[row - travel_dist][col] == '_' or curr_state[row - travel_dist][col] == '*'):
-                    curr_state[row - travel_dist][col] = '*'
+                # Light upward
+                while row - travel_dist >= 0 and curr_state[row - travel_dist][col] in [CellState.EMPTY, CellState.LIGHT]:
+                    curr_state[row - travel_dist][col] = CellState.LIGHT
                     travel_dist += 1
+
                 travel_dist = 1
-                while row + travel_dist < len(curr_state) and (curr_state[row + travel_dist][col] == '_' or curr_state[row + travel_dist][col] == '*'):
-                    curr_state[row + travel_dist][col] = '*'
+                # Light downward
+                while row + travel_dist < len(curr_state) and curr_state[row + travel_dist][col] in [CellState.EMPTY, CellState.LIGHT]:
+                    curr_state[row + travel_dist][col] = CellState.LIGHT
                     travel_dist += 1
+
                 travel_dist = 1
-                while col - travel_dist >= 0 and (curr_state[row][col - travel_dist] == '_' or curr_state[row][col - travel_dist] == '*'):
-                    curr_state[row][col - travel_dist] = '*'
+                # Light leftward
+                while col - travel_dist >= 0 and curr_state[row][col - travel_dist] in [CellState.EMPTY, CellState.LIGHT]:
+                    curr_state[row][col - travel_dist] = CellState.LIGHT
                     travel_dist += 1
+
                 travel_dist = 1
-                while col + travel_dist < len(curr_state[row]) and (curr_state[row][col + travel_dist] == '_' or curr_state[row][col + travel_dist] == '*'):
-                    curr_state[row][col + travel_dist] = '*'
+                # Light rightward
+                while col + travel_dist < len(curr_state[row]) and curr_state[row][col + travel_dist] in [CellState.EMPTY, CellState.LIGHT]:
+                    curr_state[row][col + travel_dist] = CellState.LIGHT
                     travel_dist += 1
 
 
 # Given the position of a bulb, count the number of cells that bulb can light up
 # and return this number
-def count_should_be_lit_cells(curr_state: 'List[List[str]]', row: int, col: int) -> int:
+def num_cells_light(curr_state, row: int, col: int):
     """
     :param curr_state: the current state of the puzzle
     :param row: the row index of the bulb
@@ -83,31 +92,27 @@ def count_should_be_lit_cells(curr_state: 'List[List[str]]', row: int, col: int)
     col_left = col - 1
     col_right = col + 1
 
-    ## loop through all four directions
-
     # Going up
-    while upper_row >= 0 and (curr_state[upper_row][col] == '_' or curr_state[upper_row][col] == '*'):
-        if curr_state[upper_row][col] == '_':
+    while upper_row >= 0 and curr_state[upper_row][col] in [CellState.EMPTY, CellState.LIGHT]:
+        if curr_state[upper_row][col] == CellState.EMPTY:
             count += 1
         upper_row -= 1
 
     # Going down
-    while lower_row < len(curr_state) and (
-            curr_state[lower_row][col] == '_' or curr_state[lower_row][col] == '*'):
-        if curr_state[lower_row][col] == '_':
+    while lower_row < len(curr_state) and curr_state[lower_row][col] in [CellState.EMPTY, CellState.LIGHT]:
+        if curr_state[lower_row][col] == CellState.EMPTY:
             count += 1
         lower_row += 1
 
     # To the left
-    while col_left >= 0 and (curr_state[row][col_left] == '_' or curr_state[row][col_left] == '*'):
-        if curr_state[row][col_left] == '_':
+    while col_left >= 0 and curr_state[row][col_left] in [CellState.EMPTY, CellState.LIGHT]:
+        if curr_state[row][col_left] == CellState.EMPTY:
             count += 1
         col_left -= 1
 
     # To the right
-    while col_right < len(curr_state[0]) and (
-            curr_state[row][col_right] == '_' or curr_state[row][col_right] == '*'):
-        if curr_state[row][col_right] == '_':
+    while col_right < len(curr_state[0]) and curr_state[row][col_right] in [CellState.EMPTY, CellState.LIGHT]:
+        if curr_state[row][col_right] == CellState.EMPTY:
             count += 1
         col_right += 1
 
@@ -158,34 +163,62 @@ def edge_corner_constraints(puzzle, row, col):
         - corner = 2
     :return: its constraint level
     """
-    constraint = 0
+    constraints = 0
     rows = len(puzzle)
     cols = len(puzzle)
 
     if row == 0 or row == rows - 1 or col == 0 or col == cols - 1:  # edge
-        constraint = 1
+        constraints = 1
 
     if (row == 0 or row == rows - 1) and (col == 0 or col == cols - 1):  # corner
-        constraint = 2
+        constraints = 2
 
-    return constraint
+    return constraints
+
+
+def neighbor_constraints(puzzle, row, col):
+    """
+    Check how many neighbor the given cell (row, col) is lit up our of 4 of them
+    :return: its constraint level
+    """
+    constraints = 0
+    rows = len(puzzle)
+    cols = len(puzzle)
+
+    if row > 0 and puzzle[row - 1][col] == CellState.LIGHT:  # down
+        constraints += 1
+
+    if row < rows - 1 and puzzle[row + 1][col] == CellState.LIGHT:  # up
+        constraints += 1
+
+    if col > 0 and puzzle[row][col - 1] == CellState.LIGHT:  # left
+        constraints += 1
+
+    if col < cols - 1 and puzzle[row][col + 1] == CellState.LIGHT:  # right
+        constraints += 1
+
+    return constraints
+
 
 # Return True if map is lit up entirely, False otherwise
-# Removing all * symbols to be printed out.
-def map_is_lit(curr_state):
-
+def is_map_lit_entirely(curr_state):
     is_lit_up = True
 
     # Iterate through all cells to look for _ symbol
     # if we  see _, solution is not complete
-
     for row in range(len(curr_state)):
         for col in range(len(curr_state[row])):
             if curr_state[row][col] == '_':
                 lit_up = False
-            elif curr_state[row][col] == '*':
-                curr_state[row][col] = '_'
 
     return is_lit_up
 
 
+# Removing all * symbols in current state.
+def unlit_map(curr_state):
+    # Iterate through all cells to look for * symbol
+    # if we  see _, replace it with '_'
+    for row in range(len(curr_state)):
+        for col in range(len(curr_state[row])):
+            if curr_state[row][col] == '*':
+                curr_state[row][col] = '_'
