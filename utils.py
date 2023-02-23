@@ -209,7 +209,7 @@ def is_map_lit_entirely(curr_state):
     for row in range(len(curr_state)):
         for col in range(len(curr_state[row])):
             if curr_state[row][col] == '_':
-                lit_up = False
+                is_lit_up = False
 
     return is_lit_up
 
