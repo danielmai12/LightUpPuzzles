@@ -24,6 +24,7 @@ def h1(curr_state, available_cells):
 
     return curr_most_constrained
 
+
 def h2(curr_state: 'List[List[str]]', available_cells: 'List[List[int]]' ):
     """
     Find most constraining
