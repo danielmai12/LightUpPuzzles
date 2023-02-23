@@ -1,13 +1,30 @@
-import utils
+from utils import *
 
-def h1(current_state):
+
+def h1(curr_state, available_cells):
     """
-    Find most constrained
+    Find most constrained: Selects the node with the least remaining options as the next move based on:
+        - number of walls surrounding the cell
+        - if it is in middle or edge/corner
+        - if its neighbor
     :return:
     """
+    curr_most_constrained = (-1, []) # (num_constraints, [list cells most constrained])
 
+    for cell in available_cells:
+        adjacent_walls = num_adjacent_walls(curr_state, cell[0], cell[1])  # check to see how many adjacent walls
+        location_constraints = edge_corner_constraints(curr_state, cell[0], cell[1])  # check the location constraints
 
-def h2(current_state: 'List[List[str]]', available_cells: 'List[List[int]]' ):
+        constraints = adjacent_walls + location_constraints
+
+        if constraints == curr_most_constrained[0]:
+            curr_most_constrained[1].append(cell)
+        if constraints > curr_most_constrained[0]:
+            curr_most_constrained = (constraints, [cell])
+
+    return curr_most_constrained
+
+def h2(curr_state: 'List[List[str]]', available_cells: 'List[List[int]]' ):
     """
     Find most constraining
     :return:
@@ -29,7 +46,7 @@ def h2(current_state: 'List[List[str]]', available_cells: 'List[List[int]]' ):
     return cells
 
 
-def h3(current_state):
+def h3(curr_state):
     """
     Hybrid
     :return:

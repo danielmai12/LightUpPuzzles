@@ -148,3 +148,26 @@ def num_adjacent_walls(puzzle, row, col):
         num_walls += 1
 
     return num_walls
+
+
+def edge_corner_constraints(puzzle, row, col):
+    """
+    Check if the given cell (row, col) is in edge/corner
+        - not an edge/corner = 0 (no constraint)
+        - edge = 1
+        - corner = 2
+    :return: its constraint level
+    """
+    constraint = 0
+    rows = len(puzzle)
+    cols = len(puzzle)
+
+    if row == 0 or row == rows - 1 or col == 0 or col == cols - 1:  # edge
+        constraint = 1
+
+    if (row == 0 or row == rows - 1) and (col == 0 or col == cols - 1):  # corner
+        constraint = 2
+
+    return constraint
+
+
