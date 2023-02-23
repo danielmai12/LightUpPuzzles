@@ -34,7 +34,7 @@ def h2(curr_state: 'List[List[str]]', available_cells: 'List[List[int]]' ):
     cells = []
     max_count = 0
 
-    utils.light_state(curr_state)
+    light_state(curr_state)
 
     for cell in available_cells:
         to_be_lit_up = count_should_be_lit_cells(curr_state, cell[0], cell[1])
