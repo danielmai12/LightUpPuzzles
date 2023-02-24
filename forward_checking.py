@@ -105,75 +105,12 @@ def get_empty_cells(puzzle: List[List[str]]) -> List[List[int]]:
                 empty_cells.append([r, c])
     return empty_cells
 
-
-# some places in the map are certain to be bulbs because of some constraints, for example neighbours of a wall 4 have to
-# bulbs, neighbours of wall 3 in the edge, neighbours of wall 2 in the corner, or the amount of empty neighbours of a
-# wall is exactly the same as its number.
-def place_must_have_bulbs(puzzle: List[List[str]], empty_cells: List[List[int]]) -> List[List[int]]:
-    stop = False
-    while not stop:
-        new_bulb_placed = False
-        for wall in library.valid_wall:
-
-            sure_variable = library.generate_valid_neighbours(wall[0], wall[1], len(puzzle), puzzle)
-            count_bulbs = 0
-            count_empty_cells = 0
-            count_stars = 0
-            for var in sure_variable:
-                if puzzle[var[0]][var[1]] == 'b':
-                    count_bulbs += 1
-                elif puzzle[var[0]][var[1]] == '_':
-                    count_empty_cells += 1
-                elif puzzle[var[0]][var[1]] == '*':
-                    count_stars += 1
-            # if the amount of empty neighbours of a wall is exactly the same as its number, place bulbs
-            if count_empty_cells > 0 and count_empty_cells == int(puzzle[wall[0]][wall[1]]) - count_bulbs:
-                for var in sure_variable:
-                    if puzzle[var[0]][var[1]] == '_':
-                        puzzle[var[0]][var[1]] = 'b'
-                        empty_cells.remove(var)
-
-                new_bulb_placed = True
-                light_map_up(puzzle)
-        if not new_bulb_placed:
-            stop = True
-
-    # remove already lit up cells from the list of potential cells to place a bulb
-    variables = copy.deepcopy(empty_cells)
-    for cell in variables:
-        if puzzle[cell[0]][cell[1]] == '*':
-            empty_cells.remove(cell)
-
-    return empty_cells
-
-
-# remove all cells surrounding a wall 0 from the list of places for bulbs, as there can't be any bulbs surrouding
-# a wall 0
-def remove_zero_wall_neighbours(puzzle: List[List[str]], empty_cells: List[List[int]]):
-    invalid_neighbours = []
-    # remove all neighbours of a zero wall
-    for x in range(len(library.invalid_wall)):
-        invalid_neighbours.extend(library.generate_valid_neighbours(library.invalid_wall[x][0],
-                                                                    library.invalid_wall[x][1], len(puzzle), puzzle))
-    for x in range(len(invalid_neighbours)):
-        if invalid_neighbours[x] in empty_cells:
-            empty_cells.remove(invalid_neighbours[x])
-
-
-# do some pre-processing to decrease the number of variables to be considered
-def pre_process(puzzle: List[List[str]], empty_cells: List[List[int]]):
-    empty_cells = place_must_have_bulbs(puzzle, empty_cells)
-    remove_zero_wall_neighbours(puzzle, empty_cells)
-    # TODO: Remove this print line
-    library.print_puzzle(puzzle)
-    is_map_lit_up_and_clean_map(puzzle)
-
-
 # call necessary methods/algorithms to solve the puzzle as required.
 def solve(puzzle: List[List[str]], heuristic: str):
     domain = ('b', '_')
     non_assigned = get_empty_cells(puzzle)
-    pre_process(puzzle, non_assigned)
+    # TODO: finish pre_process()
+    # pre_process(puzzle, non_assigned)
     print("Chosen heuristic: {}.".format(heuristic))
     return forward_checking(puzzle, domain, non_assigned, heuristic)
 
@@ -187,7 +124,8 @@ def main(argv=None):
 
     arguments = arg_parser.parse_args(argv)
 
-    puzzle = read_puzzle()
+    # TODO: check if read_file works the same as read_puzzle()
+    puzzle = read_file()
 
     starting_time = time.time()
     solution = solve(puzzle, arguments.heuristic)
