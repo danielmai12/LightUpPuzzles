@@ -1,4 +1,4 @@
-from utils import *
+from heuristics import *
 
 import argparse
 import sys
@@ -47,66 +47,116 @@ def check_curr_state(puzzle, non_assigned_cells) -> bool:
     return result
 
 def forward_checking(puzzle, domain, empty_cells, heuristic: str):
-    global num_nodes
-    num_nodes += 1
+
+    global node_count
+    node_count += 1
+
     # printing solving status
-    if num_nodes < 10000:
-        if num_nodes % 3 == 0:
+
+    #TODO: maybe not using this many print statements...
+    '''
+    if node_count < 10000:
+        if node_count % 3 == 0:
             print('\rProcessing.')
-        if num_nodes % 3 == 1:
+        if node_count % 3 == 1:
             print('\rProcessing..')
-        if num_nodes % 3 == 2:
+        if node_count % 3 == 2:
             print('\rProcessing...')
-    if num_nodes % 10000 == 0:
-        print('\rAlready processed {} nodes.'.format(num_nodes))
-    if num_nodes == 5000000:
-        return 'Too many nodes. Timeout!'
+    '''
+
+    if node_count % 10000 == 0:
+        print('\rAlready processed {} nodes.'.format(node_count))
+
+    if node_count == 5000000:
+        return 'Number of nodes processed is too high!! Timeout!'
+
     if validate_wall_condition(puzzle):
         return puzzle
-    # backtrack if this cannot be part of a valid solution
+
+    # backtrack if the current solution is at dead end
     if len(empty_cells) == 0 and check_curr_state(puzzle, empty_cells):
         return 'backtrack'
 
-    chosen_cells, chosen_cell = [], []
-    # check the input to see what heuristic should be used
+    next_potential_cells = []
+
+    # Check input for the heuristic to use
     if heuristic == 'most_constrained':
-        chosen_cells = find_most_constrained(puzzle, empty_cells)
+        next_potential_cells = h1(puzzle, empty_cells)  # Find most constrained
     elif heuristic == 'most_constraining':
-        chosen_cells = find_most_constraining(puzzle, empty_cells)
+        next_potential_cells = h2(puzzle, empty_cells)  # Find most constraining
     elif heuristic == 'hybrid':
-        chosen_cells = hybrid_heuristic(puzzle, empty_cells)
+        next_potential_cells = h3(puzzle, empty_cells)  # Hybrid
     else:
         print('\n*** ERROR *** Heuristic must be either "most_constrained", "most_constraining" or "hybrid".')
-        return 'stop'
-    if len(chosen_cells) >= 1:
-        chosen_cell = chosen_cells[random.randint(0, len(chosen_cells) - 1)]
+        return 'Abort!!'
 
-    # remove the chosen cell from the list of potential bulb cells later
-    empty_cells.remove(chosen_cell)
+    # If we have more than 1 chosen cells, randomly pick 1
+    # else, pick the only one we have
+    next_cell = []
+    if len(next_potential_cells) >= 1:
+        next_cell = next_potential_cells[random.randint(0, len(next_potential_cells) - 1)]
 
-    r, c = chosen_cell[0], chosen_cell[1]
-    for val in domain:
-        puzzle[r][c] = val
-        if (val != '_' and can_bulb_be_here(puzzle, r, c)) or val == '_':
+    # remove the cell chosen above from the list of empty cells
+    empty_cells.remove(next_cell)
+
+    row, col = next_cell[0], next_cell[1]
+
+    for value in domain:
+        puzzle[row][col] = value
+        #TODO: do we really need the first half of the if statement? If yes, modify ccan_bulb_be_here, else delete it
+        if (value != CellState.EMPTY and can_bulb_be_here(puzzle, row, col)) or value == CellState.EMPTY:
             result = forward_checking(puzzle, domain, empty_cells, heuristic)
             if result != 'backtrack':
                 return result
 
-    empty_cells.append(chosen_cell)
+    empty_cells.append(next_cell)
     return 'backtrack'
 
 
 # get all the empty cells in the map, which are potential places for bulbs.
 def get_empty_cells(puzzle: List[List[str]]) -> List[List[int]]:
+
+    """
+    :param puzzle: List[List[str]]
+    :return: List[List[int]], the coordinates of empty cells in the puzzle
+    """
+
     empty_cells = []
-    for r in range(len(puzzle)):
-        for c in range(len(puzzle[r])):
-            if puzzle[r][c] == '_':
-                empty_cells.append([r, c])
+
+    for row in range(len(puzzle)):
+        for col in range(len(puzzle[row])):
+            if puzzle[row][col] == '_':
+                empty_cells.append([row, col])
+
     return empty_cells
 
+# check if a given cell is inside the map
+def is_inside(puzzle: List[List[str]], r: int, c: int) -> bool:
+    return 0 <= r < len(puzzle) and 0 <= c < len(puzzle[0])
+
+
+# given a cell, check if we can place a bulb there
+def can_bulb_be_here(puzzle: List[List[str]], r: int, c: int) -> bool:
+    delta_r = [-1, 1, 0, 0]
+    delta_c = [0, 0, -1, 1]
+    for i in range(len(delta_c)):
+        moving_r = r + delta_r[i]
+        moving_c = c + delta_c[i]
+
+        if is_inside(puzzle, moving_r, moving_c) and puzzle[moving_r][moving_c] in wall_values:
+            # if there is already enough number of bulbs for that well
+            if count_adjacent_bulbs(puzzle, moving_r, moving_c) > int(puzzle[moving_r][moving_c]):
+                return False
+
+        while is_inside(puzzle, moving_r, moving_c) and not puzzle[moving_r][moving_c] in wall_values:
+            if puzzle[moving_r][moving_c] == 'b':  # adjacent bulbs
+                return False
+            moving_r += delta_r[i]
+            moving_c += delta_c[i]
+    return True
+
 # call necessary methods/algorithms to solve the puzzle as required.
-def solve(puzzle: List[List[str]], heuristic: str):
+def solve_puzzle(puzzle: List[List[str]], heuristic: str):
     domain = ('b', '_')
     non_assigned = get_empty_cells(puzzle)
     # TODO: finish pre_process()
@@ -117,8 +167,10 @@ def solve(puzzle: List[List[str]], heuristic: str):
 
 # receive input, process input and call necessary methods to solve the puzzle.
 def main(argv=None):
+
     if argv is None:
         argv = sys.argv[1:]
+
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument('--heuristic', action='store', dest='heuristic', type=str, default='most_constrained')
 
@@ -128,12 +180,15 @@ def main(argv=None):
     puzzle = read_file()
 
     starting_time = time.time()
-    solution = solve(puzzle, arguments.heuristic)
+    solution = solve_puzzle(puzzle, arguments.heuristic)
     ending_time = time.time()
+
     if solution == 'Too many nodes. Timeout!':
         print('Too many nodes. Timeout.\nIt took {} seconds.'.format(ending_time - starting_time))
+
     elif solution == 'stop':
         print('Please retry!')
+
     else:
         print('*** Done! ***\nThe solution is printed out below:')
         print_puzzle(solution)
