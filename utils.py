@@ -221,12 +221,26 @@ def unlit_map(curr_state):
             if curr_state[row][col] == '*':
                 curr_state[row][col] = '_'
 
-
+# Check if a given cell is inside the current puzzle
 def is_in_bounds(curr_state, row, col):
+    """
+    :param curr_state: List[List[str]] - the puzzle
+    :param row: int - the row number of the cell
+    :param col: int - the col number of the cell
+    :return: bool
+    """
+
     return 0 <= row < len(curr_state) and 0 <= col < len(curr_state)
 
-
+# Given a cell, check the surrounding to see if the bulb can be placed there
 def is_valid_bulb(curr_state, row, col):
+    """
+    :param curr_state: List[List[str]] - the puzzle
+    :param row: int - the row number of the cell
+    :param col: int - the col number of the cell
+    :return: bool
+    """
+
     directions = [(-1, 0), (1, 0), (0, 1), (0, -1)]
 
     for x_direct, y_direct in directions:
@@ -237,7 +251,6 @@ def is_valid_bulb(curr_state, row, col):
             row_temp, col_temp = row + x_direct, col + y_direct
 
     return True
-
 
 def is_solved(curr_state):
     is_valid_wall = True

@@ -7,6 +7,7 @@ import random
 import time
 import copy
 
+node_count = 0
 # forward checking algorithm, with corresponding heuristic
 # check the status of the current "solution", or node, to see if it could be on the path to the solution,
 # return False if it cannot be possibly part of a solution
@@ -70,7 +71,7 @@ def forward_checking(puzzle, domain, empty_cells, heuristic: str):
     if node_count == 5000000:
         return 'Number of nodes processed is too high!! Timeout!'
 
-    if validate_wall_condition(puzzle):
+    if is_solved(puzzle):
         return puzzle
 
     # backtrack if the current solution is at dead end
@@ -104,7 +105,8 @@ def forward_checking(puzzle, domain, empty_cells, heuristic: str):
     for value in domain:
         puzzle[row][col] = value
         #TODO: do we really need the first half of the if statement? If yes, modify ccan_bulb_be_here, else delete it
-        if (value != CellState.EMPTY and can_bulb_be_here(puzzle, row, col)) or value == CellState.EMPTY:
+
+        if (value != CellState.EMPTY and is_valid_bulb(puzzle, row, col)) or value == CellState.EMPTY:
             result = forward_checking(puzzle, domain, empty_cells, heuristic)
             if result != 'backtrack':
                 return result
@@ -129,31 +131,6 @@ def get_empty_cells(puzzle: List[List[str]]) -> List[List[int]]:
                 empty_cells.append([row, col])
 
     return empty_cells
-
-# check if a given cell is inside the map
-def is_inside(puzzle: List[List[str]], r: int, c: int) -> bool:
-    return 0 <= r < len(puzzle) and 0 <= c < len(puzzle[0])
-
-
-# given a cell, check if we can place a bulb there
-def can_bulb_be_here(puzzle: List[List[str]], r: int, c: int) -> bool:
-    delta_r = [-1, 1, 0, 0]
-    delta_c = [0, 0, -1, 1]
-    for i in range(len(delta_c)):
-        moving_r = r + delta_r[i]
-        moving_c = c + delta_c[i]
-
-        if is_inside(puzzle, moving_r, moving_c) and puzzle[moving_r][moving_c] in wall_values:
-            # if there is already enough number of bulbs for that well
-            if count_adjacent_bulbs(puzzle, moving_r, moving_c) > int(puzzle[moving_r][moving_c]):
-                return False
-
-        while is_inside(puzzle, moving_r, moving_c) and not puzzle[moving_r][moving_c] in wall_values:
-            if puzzle[moving_r][moving_c] == 'b':  # adjacent bulbs
-                return False
-            moving_r += delta_r[i]
-            moving_c += delta_c[i]
-    return True
 
 # call necessary methods/algorithms to solve the puzzle as required.
 def solve_puzzle(puzzle: List[List[str]], heuristic: str):
@@ -193,7 +170,7 @@ def main(argv=None):
         print('*** Done! ***\nThe solution is printed out below:')
         print_puzzle(solution)
         print("The puzzle was solved in {} seconds.".format(ending_time - starting_time))
-    print('Visited {} nodes.'.format(num_nodes))
+    print('Visited {} nodes.'.format(node_count))
 
 
 if __name__ == '__main__':
