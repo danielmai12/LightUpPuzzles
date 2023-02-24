@@ -22,10 +22,8 @@ def read_file(filename):
                 line = file.readline()
                 for col in range(cols):
                     cell = line[col]
-                    if cell.isnumeric():
-                        cell = int(cell)
                     puzzle_dict[count][row][col] = cell
-        count += 1
+            count += 1
 
     return puzzle_dict
 
@@ -52,7 +50,6 @@ def light_up_puzzle(curr_state):
             if curr_state[row][col] == CellState.BULB:
                 # At the position of the light bulb, light up all
                 travel_dist = 1
-
                 # Light upward
                 while row - travel_dist >= 0 and curr_state[row - travel_dist][col] in [CellState.EMPTY, CellState.LIGHT]:
                     curr_state[row - travel_dist][col] = CellState.LIGHT
@@ -179,7 +176,7 @@ def edge_corner_constraints(puzzle, row, col):
 
 def neighbor_constraints(puzzle, row, col):
     """
-    Check how many neighbor the given cell (row, col) is lit up our of 4 of them
+    Check how many neighbor the given cell (row, col) is lit up out of 4 of them
     :return: its constraint level
     """
     constraints = 0
@@ -223,3 +220,40 @@ def unlit_map(curr_state):
         for col in range(len(curr_state[row])):
             if curr_state[row][col] == '*':
                 curr_state[row][col] = '_'
+
+
+def is_in_bounds(curr_state, row, col):
+    return 0 <= row < len(curr_state) and 0 <= col < len(curr_state)
+
+
+def is_valid_bulb(curr_state, row, col):
+    directions = [(-1, 0), (1, 0), (0, 1), (0, -1)]
+
+    for x_direct, y_direct in directions:
+        row_temp, col_temp = row + x_direct, col + y_direct
+        while is_in_bounds(curr_state, row_temp, col_temp) and curr_state[row_temp][col_temp].isdigit():
+            if curr_state[row_temp][col_temp] == CellState.BULB:
+                return False
+            row_temp, col_temp = row + x_direct, col + y_direct
+
+    return True
+
+
+def is_solved(curr_state):
+    is_valid_wall = True
+    is_all_wall_valid = True
+
+    for row in range(len(curr_state)):
+        for col in range(len(curr_state[row])):
+            if curr_state[row][col].isdigit() and not has_valid_adjacent_lights(curr_state, row, col):
+                is_valid_wall = False
+                break
+            if curr_state[row][col] == CellState.BULB and not is_valid_bulb(curr_state, row, col):
+                is_all_wall_valid = False
+
+    light_up_puzzle(curr_state)
+    is_all_light_up = is_map_lit_entirely(curr_state)
+    unlit_map(curr_state)
+
+    return is_valid_wall and is_all_light_up and is_all_wall_valid
+
