@@ -39,7 +39,7 @@ def print_puzzle(puzzle):
                 print(puzzle[row][col], end='')
 
 
-# Given the current state of the curr_state, with newly placed bulbs,
+# Given the current state of the curr_state (the puzzle), with newly placed bulbs,
 # light up all cells in the same row and col that is not obstructed by wall using * symbols
 def light_up_puzzle(curr_state):
     """
@@ -121,6 +121,7 @@ def num_cells_light(curr_state, row: int, col: int):
 
 def has_valid_adjacent_lights(puzzle, row, col):
     # check if a cell with a number has the correct number of adjacent lights
+    # Only used to check cells with number
     count = 0
     rows = len(puzzle)
     cols = len(puzzle)
