@@ -200,6 +200,12 @@ def neighbor_constraints(puzzle, row, col):
 
 # Return True if map is lit up entirely, False otherwise
 def is_map_lit_entirely(curr_state):
+
+    """
+    :param curr_state: List[List[str]] - the puzzle
+    :return: bool
+    """
+
     is_lit_up = True
 
     # Iterate through all cells to look for _ symbol
@@ -214,6 +220,9 @@ def is_map_lit_entirely(curr_state):
 
 # Removing all * symbols in current state.
 def unlit_map(curr_state):
+    """
+    :param curr_state: List[List[str]] - the puzzle
+    """
     # Iterate through all cells to look for * symbol
     # if we  see _, replace it with '_'
     for row in range(len(curr_state)):
