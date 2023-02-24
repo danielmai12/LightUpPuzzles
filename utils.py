@@ -116,9 +116,9 @@ def num_cells_light(curr_state, row: int, col: int):
     return count
 
 
-def has_valid_adjacent_lights(puzzle, row, col):
-    # check if a cell with a number has the correct number of adjacent lights
-    # Only used to check cells with number
+def num_adjacent_lights(puzzle, row, col):
+    # count adjacent lights if a cell with a number
+    # Only used to check cells with number - WALL
     count = 0
     rows = len(puzzle)
     cols = len(puzzle)
@@ -132,7 +132,7 @@ def has_valid_adjacent_lights(puzzle, row, col):
     if col < cols - 1 and puzzle[row][col + 1] == CellState.BULB:  # right
         count += 1
 
-    return puzzle[row][col] == count
+    return count
 
 
 def num_adjacent_walls(puzzle, row, col):
@@ -254,28 +254,31 @@ def is_valid_bulb(curr_state, row, col):
 
     for x_direct, y_direct in directions:
         row_temp, col_temp = row + x_direct, col + y_direct
-        while is_in_bounds(curr_state, row_temp, col_temp) and curr_state[row_temp][col_temp].isdigit():
+        while is_in_bounds(curr_state, row_temp, col_temp) and not curr_state[row_temp][col_temp].isdigit():
             if curr_state[row_temp][col_temp] == CellState.BULB:
                 return False
-            row_temp, col_temp = row + x_direct, col + y_direct
+            row_temp, col_temp = row_temp + x_direct, col_temp + y_direct
 
     return True
 
 def is_solved(curr_state):
-    is_valid_wall = True
-    is_all_wall_valid = True
-
-    for row in range(len(curr_state)):
-        for col in range(len(curr_state[row])):
-            if curr_state[row][col].isdigit() and not has_valid_adjacent_lights(curr_state, row, col):
-                is_valid_wall = False
-                break
-            if curr_state[row][col] == CellState.BULB and not is_valid_bulb(curr_state, row, col):
-                is_all_wall_valid = False
-
     light_up_puzzle(curr_state)
     is_all_light_up = is_map_lit_entirely(curr_state)
     unlit_map(curr_state)
 
-    return is_valid_wall and is_all_light_up and is_all_wall_valid
+    return is_all_light_up and is_state_valid(curr_state)
+
+
+def is_state_valid(curr_state):
+    rows = len(curr_state)
+    cols = len(curr_state)
+
+    for row in range(rows):
+        for col in range(cols):
+            if curr_state[row][col].isdigit() and int(curr_state[row][col]) < num_adjacent_lights(curr_state, row, col):
+                return False
+            if curr_state[row][col] == CellState.BULB and not is_valid_bulb(curr_state, row, col):
+                return False
+
+    return True
 

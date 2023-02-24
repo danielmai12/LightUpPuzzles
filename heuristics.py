@@ -24,7 +24,7 @@ def h1(curr_state, available_cells):
             curr_most_constrained = (constraints, [cell])
     unlit_map(curr_state)
 
-    return curr_most_constrained
+    return curr_most_constrained[1]
 
 
 def h2(curr_state, available_cells):
