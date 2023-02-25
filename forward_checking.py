@@ -9,139 +9,6 @@ import copy
 
 node_count = 0
 
-def prioritize_bulbs(puzzle, r: int, c: int):
-    moving_r = r - 1
-    while moving_r >= 0 and puzzle[moving_r][c].isdigit():
-        puzzle[moving_r][c] = str( int(puzzle[moving_r][c]) % 2 )
-        moving_r -= 1
-
-    moving_r = r + 1
-    while moving_r < len(puzzle) - 1 and puzzle[moving_r][c].isdigit():
-        puzzle[moving_r][c] = str( int(puzzle[moving_r][c]) % 2 )
-        moving_r += 1
-
-    moving_c = c - 1
-    while moving_c >= 0 and puzzle[r][moving_c].isdigit():
-        puzzle[r][moving_c] = str( int(puzzle[r][moving_c]) % 2 )
-        moving_c -= 1
-
-    moving_c = c + 1
-    while moving_c < len(puzzle[r]) - 1 and puzzle[r][moving_c].isdigit():
-        puzzle[r][moving_c] = str( int(puzzle[r][moving_c]) % 2 )
-        moving_c += 1
-
-
-def prioritize_walls(puzzle, r, c):
-    moving_r = r - 1
-    if r > 0 and puzzle[moving_r][c].isdigit():
-        puzzle[moving_r][c] = str( int(int(puzzle[moving_r][c]) / 2) * 2 )
-        if int(puzzle[moving_r][c]) == 2:
-            prioritize_bulbs(puzzle, moving_r, c)
-
-    moving_r = r + 1
-    if r < len(puzzle) - 1 and puzzle[moving_r][c].isdigit():
-        puzzle[moving_r][c] = str( int(int(puzzle[moving_r][c]) / 2) * 2 )
-        if int(puzzle[moving_r][c]) == 2:
-            prioritize_bulbs(puzzle, moving_r, c)
-
-    moving_c = c - 1
-    if c > 0 and puzzle[r][moving_c].isdigit():
-        puzzle[r][moving_c] = str( int(int(puzzle[r][moving_c]) / 2) * 2 )
-        if int(puzzle[r][moving_c]) == 2:
-            prioritize_bulbs(puzzle, r, moving_c)
-
-    moving_c = c + 1
-    if c < len(puzzle[0]) - 1 and puzzle[r][moving_c].isdigit():
-        puzzle[r][moving_c] = str( int(int(puzzle[r][moving_c]) / 2) * 2 )
-        if int(puzzle[r][moving_c]) == 2:
-            prioritize_bulbs(puzzle, r, moving_c)
-
-
-# check to see among all adjacent cells, how many are potential places for bulbs,
-# >=2 as empty with priority 2 can be bulbs
-def generate_potential_bulbs_to_wall(curr_state, row, col):
-    """
-    # The cell input in this method are only wall cell (cell with number)
-    # check to see among all adjacent cells of this cell, how many are potential places are there for bulbs,
-    # >=2 as empty with priority 2 can be bulbs
-
-    :param curr_state: List[List[str]] - the current state of the puzzle
-    :param row: int - row index of the given cell
-    :param col: int - col index of the given cell
-    :return: int
-    """
-
-    num_bulbs = 0
-
-    # check all for neighbours
-    if row > 0 and curr_state[row - 1][col].isdigit() and int(curr_state[row - 1][col]) >= 2:
-        num_bulbs += 1
-    if row < len(curr_state) - 1 and curr_state[row + 1][col].isdigit() and int(curr_state[row + 1][col]) >= 2:
-        num_bulbs += 1
-    if col > 0 and (curr_state[row][col - 1].isdigit()) and int(curr_state[row][col - 1]) >= 2:
-        num_bulbs += 1
-    if col < len(curr_state[0]) - 1 and curr_state[row][col + 1].isdigit() and int(curr_state[row][col + 1]) >= 2:
-        num_bulbs += 1
-    return num_bulbs
-
-# forward checking algorithm
-# check the status of the current "solution", or node, to see if it could be on the path to the solution,
-# return False if it cannot be possibly part of a solution
-
-def check_curr_sol_for_feasibility(curr_state, non_assigned_cells) -> bool:
-
-    # if a cell can be a bulb or empty, its priority is 3
-    for row in range(len(curr_state)):
-        for col in range(len(curr_state[row])):
-            value = len(curr_state) * row + col
-            if value in non_assigned_cells:
-                curr_state[row][col] = 3
-
-    # if a cell cannot be a bulb, its priority is 1.
-    for row in range(len(curr_state)):
-        for col in range(len(curr_state[row])):
-            if curr_state[row][col] == 'b':
-                prioritize_bulbs(curr_state, row, col)
-
-    # Check each wall with number
-    # if a cell cannot be empty but can be a bulb, assign 2 as its priority,
-    # priority 0 if it can't be neither
-    for row in range(len(curr_state)):
-        for col in range(len(curr_state[row])):
-            if curr_state[row][col].isdigit():
-
-                # The number at this wall
-                wallNum = int(curr_state[row][col])
-
-                # Number of bulbs that are adjacent to this wall
-                num_adj_bulbs = num_adjacent_lights(curr_state, row, col)
-
-                # Number of potential bulbs that are adjacent to the wall
-                potential_bulbs = generate_potential_bulbs_to_wall(curr_state, row, col)
-
-                # If cell is NOT at edge or corner, its status is 0
-                # If at edge, status is 1
-                # If at corner, status is 2
-                cell_status = edge_corner_constraints(curr_state, row, col)
-
-                require_bulbs_for_this_cell = wallNum - num_adj_bulbs - cell_status
-
-                if require_bulbs_for_this_cell == potential_bulbs:
-                    prioritize_walls(curr_state, row, col)
-
-    result = True
-
-    # Iterating the entire puzzle and set the puzzle to normal ????
-    for row in range(len(curr_state)):
-        for col in range(len(curr_state[row])):
-            #if isinstance(curr_state[row][col], int):
-            if curr_state[row][col].isdigit():
-                if int(curr_state[row][col]) == 0:
-                    result = False
-                curr_state[row][col] = '_'
-
-    return result
-
 def forward_checking(puzzle, domain, empty_cells, heuristic):
 
     """
@@ -156,17 +23,6 @@ def forward_checking(puzzle, domain, empty_cells, heuristic):
     node_count += 1
 
     # printing solving status
-
-    #TODO: maybe not using this many print statements...
-    '''
-    if node_count < 10000:
-        if node_count % 3 == 0:
-            print('\rProcessing.')
-        if node_count % 3 == 1:
-            print('\rProcessing..')
-        if node_count % 3 == 2:
-            print('\rProcessing...')
-    '''
 
     if node_count % 10000 == 0:
         print('\rAlready processed {} nodes.'.format(node_count))
@@ -322,12 +178,19 @@ def domain_change(domain, row, col, value):
 
         travel_dist = 1
 
+        if row == 8 and col == 5:
+            print("Evaluate of the while loop is:")
+            print(col - travel_dist >= 0 and is_domain_of_empty_cell(domain, row, col - travel_dist))
+
         # To the left
         while col - travel_dist >= 0 and is_domain_of_empty_cell(domain, row, col - travel_dist):
             if len(domain[row][col - travel_dist]) == 2:
                 domain[row][col - travel_dist].remove('b')
             elif len(domain[row][col - travel_dist]) == 1 and domain[row][col - travel_dist][0] == CellState.BULB:
                 domain[row][col - travel_dist].remove('b')
+            if row == 8 and col == 5:
+                print("Domain is:")
+                print(domain[row][col - travel_dist])
             travel_dist += 1
 
         travel_dist = 1
@@ -363,11 +226,11 @@ def check_no_empty_domain( domain, empty_cells ):
 
     return True
 
-# get all the empty cells in the map, which are potential places for bulbs.
-def get_empty_cells(puzzle: List[List[str]]) -> List[List[int]]:
+def get_empty_cells(puzzle):
 
     """
-    :param puzzle: List[List[str]]
+    Take the puzzle and return the coordinates of empty cells
+    :param puzzle: List[List[str]] - The puzzle
     :return: List[List[int]], the coordinates of empty cells in the puzzle
     """
 
@@ -379,6 +242,23 @@ def get_empty_cells(puzzle: List[List[str]]) -> List[List[int]]:
                 empty_cells.append([row, col])
 
     return empty_cells
+
+def get_wall_cells(puzzle):
+
+    """
+    Take the puzzle and return the coordinates of empty cells
+    :param puzzle: List[List[str]] - The puzzle
+    :return: List[List[int]], the coordinates of puzzle cells in the puzzle
+    """
+
+    wall_cells = []
+
+    for row in range(len(puzzle)):
+        for col in range(len(puzzle[row])):
+            if puzzle[row][col].isdigit():
+                wall_cells.append([row, col])
+
+    return wall_cells
 
 def print_domain(domain):
 
@@ -417,30 +297,494 @@ def make_empty_cell_domain(puzzle):
 
     return domain_of_empty_cell
 
+def take_bulb_from_cell_domain(domain, row, col):
+    """
+    Take bulb from the domain of a given empty cell
+    Only give row and col coordinate of empty cell to this method
+    :param domain: List[List[List[str]]] - The value domain of each cell in the puzzle
+    :param row: int - the row coordinate of an empty cell
+    :param col: int - the col coordinate of an empty cell
+    :return:
+    """
+
+    if CellState.BULB in domain[row][col]:
+        domain[row][col].remove(CellState.BULB)
+
+def place_bulb_around_wall_4(puzzle, row, col, domain_of_empty_cell, empty_cells):
+    """
+    # Place 4 bulbs around a wall with number 4
+    # The given wall is ensured to be not on the edge of the map
+    # While placing bulb, check if all domain size of empty cell is still > 0,
+    # there is no conflict in constraint (e.i. an empty cell that only have value domain '_' yet must be placed a bulb on"
+    # and the state of the puzzle is still valid (no 2 bulbs seeing each other)
+    # Return true if everything is satisfied
+    :param puzzle:
+    :param row:
+    :param col:
+    :param domain_of_empty_cell:
+    :param empty_cell:
+    :return:
+    """
+
+    validPuzzle= True
+
+    if validPuzzle and CellState.BULB in domain_of_empty_cell[row-1][col]:
+        puzzle[row-1][col] = CellState.BULB
+
+        if [row - 1, col] in empty_cells:
+            empty_cells.remove([row-1, col])
+
+        domain_change(domain_of_empty_cell, row-1, col, CellState.BULB)
+        validPuzzle = is_state_valid(puzzle) and check_no_empty_domain( domain_of_empty_cell, empty_cells )
+    else:
+        validPuzzle = False
+
+
+    if validPuzzle and CellState.BULB in domain_of_empty_cell[row+1][col]:
+        puzzle[row+1][col] = CellState.BULB
+
+        if [row + 1, col] in empty_cells:
+            empty_cells.remove([row+1, col])
+
+        domain_change(domain_of_empty_cell, row+1, col, CellState.BULB)
+        validPuzzle = is_state_valid(puzzle) and check_no_empty_domain( domain_of_empty_cell, empty_cells )
+    else:
+        validPuzzle = False
+
+
+    if validPuzzle and CellState.BULB in domain_of_empty_cell[row][col-1]:
+        puzzle[row][col-1] = CellState.BULB
+
+        if [row, col-1] in empty_cells:
+            empty_cells.remove([row, col-1])
+
+        domain_change(domain_of_empty_cell, row, col-1, CellState.BULB)
+        validPuzzle = is_state_valid(puzzle) and check_no_empty_domain( domain_of_empty_cell, empty_cells )
+    else:
+        validPuzzle = False
+
+
+    if validPuzzle and CellState.BULB in domain_of_empty_cell[row][col+1]:
+        puzzle[row][col+1] = CellState.BULB
+
+        if [row, col+1] in empty_cells:
+            empty_cells.remove([row, col+1])
+
+        domain_change(domain_of_empty_cell, row, col+1, CellState.BULB)
+        validPuzzle = is_state_valid(puzzle) and check_no_empty_domain( domain_of_empty_cell, empty_cells )
+    else:
+        validPuzzle = False
+
+    return validPuzzle
+
+def wall_of_3_has_exactly_3_spots(domain, row, col):
+
+    """
+    # Given a wall of number 3, count if this wall has exactly 3 available cells around it to place bulb
+    # Wall are not counted, and empty cells that doesn't have bulb in its domain are not counted
+
+    :param domain: List[List[List[str]]] - the domain of each cell in the puzzle
+    :param row: int - row coordinate of a wall with value 3
+    :param col: int - col coordinate of a wall with value 3
+    :return: bool
+    """
+
+    count = 0
+
+    if row-1 >= 0 and CellState.BULB in domain[row-1][col]:
+        count += 1
+
+    if row+1 < len(domain) and CellState.BULB in domain[row+1][col]:
+        count += 1
+
+    if col-1 >= 0 and CellState.BULB in domain[row][col-1]:
+        count += 1
+
+    if col+1 < len(domain[0]) and CellState.BULB in domain[row][col+1]:
+        count += 1
+
+    return count == 3
+
+def place_bulb_around_wall_3(puzzle, row, col, domain_of_empty_cell, empty_cells):
+
+    """
+    # Place 3 bulbs around a wall with number 3
+    # The given wall is ensured to have exactly 3 empty space around it
+    # While placing bulb, check if all domain size of empty cell is still > 0,
+    # there is no conflict in constraint (e.i. an empty cell that only have value domain '_' yet must be placed a bulb on"
+    # and the state of the puzzle is still valid (no 2 bulbs seeing each other)
+    # Return true if everything is satisfied
+    :param puzzle:
+    :param row:
+    :param col:
+    :param domain_of_empty_cell:
+    :param empty_cell:
+    :return:
+    """
+
+    true_count = [False, False, False]
+    count = 0
+
+    if row-1 >= 0 and CellState.BULB in domain_of_empty_cell[row-1][col]:
+        puzzle[row - 1][col] = CellState.BULB
+
+        # Sometimes we are re-assigning bulb a cell that already has a bulb placed on it
+        # So we gotta check if this cell is still on empty_cells
+        if [row - 1, col] in empty_cells:
+            empty_cells.remove([row - 1, col])
+
+        domain_change(domain_of_empty_cell, row - 1, col, CellState.BULB)
+        if is_state_valid(puzzle) and check_no_empty_domain(domain_of_empty_cell, empty_cells):
+            count += 1
+
+    if row+1 < len(puzzle) and CellState.BULB in domain_of_empty_cell[row+1][col]:
+        puzzle[row + 1][col] = CellState.BULB
+
+        if [row + 1, col] in empty_cells:
+            empty_cells.remove([row + 1, col])
+
+        domain_change(domain_of_empty_cell, row + 1, col, CellState.BULB)
+        if is_state_valid(puzzle) and check_no_empty_domain(domain_of_empty_cell, empty_cells):
+            count += 1
+
+    if col-1 >= 0 and CellState.BULB in domain_of_empty_cell[row][col-1]:
+        puzzle[row][col-1] = CellState.BULB
+
+        if [row , col-1] in empty_cells:
+            empty_cells.remove([row , col-1])
+
+        domain_change(domain_of_empty_cell, row, col-1, CellState.BULB)
+        if is_state_valid(puzzle) and check_no_empty_domain(domain_of_empty_cell, empty_cells):
+            count += 1
+
+    if col+1 < len(puzzle[0]) and CellState.BULB in domain_of_empty_cell[row][col+1]:
+        puzzle[row][col+1] = CellState.BULB
+
+        if [row, col+1] in empty_cells:
+            empty_cells.remove([row, col+1])
+
+        domain_change(domain_of_empty_cell, row, col+1, CellState.BULB)
+        if is_state_valid(puzzle) and check_no_empty_domain(domain_of_empty_cell, empty_cells):
+            count += 1
+
+    return count == 3
+
+def wall_of_2_has_exactly_2_spots(domain, row, col):
+
+    """
+    # Given a wall of number 3, count if this wall has exactly 3 available cells around it to place bulb
+    # Wall are not counted, and empty cells that doesn't have bulb in its domain are not counted
+
+    :param domain: List[List[List[str]]] - the domain of each cell in the puzzle
+    :param row: int - row coordinate of a wall with value 3
+    :param col: int - col coordinate of a wall with value 3
+    :return: bool
+    """
+
+    count = 0
+
+    if row-1 >= 0 and CellState.BULB in domain[row-1][col]:
+        count += 1
+
+    if row+1 < len(domain) and CellState.BULB in domain[row+1][col]:
+        count += 1
+
+    if col-1 >= 0 and CellState.BULB in domain[row][col-1]:
+        count += 1
+
+    if col+1 < len(domain[0]) and CellState.BULB in domain[row][col+1]:
+        count += 1
+
+    return count == 2
+
+def place_bulb_around_wall_2(puzzle, row, col, domain_of_empty_cell, empty_cells):
+
+    """
+    # Place 3 bulbs around a wall with number 3
+    # The given wall is ensured to have exactly 3 empty space around it
+    # While placing bulb, check if all domain size of empty cell is still > 0,
+    # there is no conflict in constraint (e.i. an empty cell that only have value domain '_' yet must be placed a bulb on"
+    # and the state of the puzzle is still valid (no 2 bulbs seeing each other)
+    # Return true if everything is satisfied
+    :param puzzle:
+    :param row:
+    :param col:
+    :param domain_of_empty_cell:
+    :param empty_cell:
+    :return:
+    """
+
+    true_count = [False, False, False]
+    count = 0
+
+    if row-1 >= 0 and CellState.BULB in domain_of_empty_cell[row-1][col]:
+        puzzle[row - 1][col] = CellState.BULB
+
+        # Sometimes we are re-assigning bulb a cell that already has a bulb placed on it
+        # So we gotta check if this cell is still on empty_cells
+        if [row - 1, col] in empty_cells:
+            empty_cells.remove([row - 1, col])
+
+        domain_change(domain_of_empty_cell, row - 1, col, CellState.BULB)
+        if is_state_valid(puzzle) and check_no_empty_domain(domain_of_empty_cell, empty_cells):
+            count += 1
+
+    if row+1 < len(puzzle) and CellState.BULB in domain_of_empty_cell[row+1][col]:
+        puzzle[row + 1][col] = CellState.BULB
+
+        if [row + 1, col] in empty_cells:
+            empty_cells.remove([row + 1, col])
+
+        domain_change(domain_of_empty_cell, row + 1, col, CellState.BULB)
+        if is_state_valid(puzzle) and check_no_empty_domain(domain_of_empty_cell, empty_cells):
+            count += 1
+
+    if col-1 >= 0 and CellState.BULB in domain_of_empty_cell[row][col-1]:
+        puzzle[row][col-1] = CellState.BULB
+
+        if [row , col-1] in empty_cells:
+            empty_cells.remove([row , col-1])
+
+        domain_change(domain_of_empty_cell, row, col-1, CellState.BULB)
+        if is_state_valid(puzzle) and check_no_empty_domain(domain_of_empty_cell, empty_cells):
+            count += 1
+
+    if col+1 < len(puzzle[0]) and CellState.BULB in domain_of_empty_cell[row][col+1]:
+        puzzle[row][col+1] = CellState.BULB
+
+        if [row, col+1] in empty_cells:
+            empty_cells.remove([row, col+1])
+
+        domain_change(domain_of_empty_cell, row, col+1, CellState.BULB)
+        if is_state_valid(puzzle) and check_no_empty_domain(domain_of_empty_cell, empty_cells):
+            count += 1
+
+    return count == 2
+
+def wall_of_1_has_exactly_1_spots(domain, row, col):
+
+    """
+    # Given a wall of number 3, count if this wall has exactly 3 available cells around it to place bulb
+    # Wall are not counted, and empty cells that doesn't have bulb in its domain are not counted
+
+    :param domain: List[List[List[str]]] - the domain of each cell in the puzzle
+    :param row: int - row coordinate of a wall with value 3
+    :param col: int - col coordinate of a wall with value 3
+    :return: bool
+    """
+
+    count = 0
+
+    if row-1 >= 0 and CellState.BULB in domain[row-1][col]:
+        count += 1
+
+    if row+1 < len(domain) and CellState.BULB in domain[row+1][col]:
+        count += 1
+
+    if col-1 >= 0 and CellState.BULB in domain[row][col-1]:
+        count += 1
+
+    if col+1 < len(domain[0]) and CellState.BULB in domain[row][col+1]:
+        count += 1
+
+    return count == 1
+
+def place_bulb_around_wall_1(puzzle, row, col, domain_of_empty_cell, empty_cells):
+
+    """
+    # Place 3 bulbs around a wall with number 3
+    # The given wall is ensured to have exactly 3 empty space around it
+    # While placing bulb, check if all domain size of empty cell is still > 0,
+    # there is no conflict in constraint (e.i. an empty cell that only have value domain '_' yet must be placed a bulb on"
+    # and the state of the puzzle is still valid (no 2 bulbs seeing each other)
+    # Return true if everything is satisfied
+    :param puzzle:
+    :param row:
+    :param col:
+    :param domain_of_empty_cell:
+    :param empty_cell:
+    :return:
+    """
+
+    true_count = [False, False, False]
+    count = 0
+
+    if row-1 >= 0 and CellState.BULB in domain_of_empty_cell[row-1][col]:
+        puzzle[row - 1][col] = CellState.BULB
+
+        # Sometimes we are re-assigning bulb a cell that already has a bulb placed on it
+        # So we gotta check if this cell is still on empty_cells
+        if [row - 1, col] in empty_cells:
+            empty_cells.remove([row - 1, col])
+
+        domain_change(domain_of_empty_cell, row - 1, col, CellState.BULB)
+        if is_state_valid(puzzle) and check_no_empty_domain(domain_of_empty_cell, empty_cells):
+            count += 1
+
+    if row+1 < len(puzzle) and CellState.BULB in domain_of_empty_cell[row+1][col]:
+        puzzle[row + 1][col] = CellState.BULB
+
+        if [row + 1, col] in empty_cells:
+            empty_cells.remove([row + 1, col])
+
+        domain_change(domain_of_empty_cell, row + 1, col, CellState.BULB)
+        if is_state_valid(puzzle) and check_no_empty_domain(domain_of_empty_cell, empty_cells):
+            count += 1
+
+    if col-1 >= 0 and CellState.BULB in domain_of_empty_cell[row][col-1]:
+        puzzle[row][col-1] = CellState.BULB
+
+        if [row , col-1] in empty_cells:
+            empty_cells.remove([row , col-1])
+
+        domain_change(domain_of_empty_cell, row, col-1, CellState.BULB)
+        if is_state_valid(puzzle) and check_no_empty_domain(domain_of_empty_cell, empty_cells):
+            count += 1
+
+    if col+1 < len(puzzle[0]) and CellState.BULB in domain_of_empty_cell[row][col+1]:
+        puzzle[row][col+1] = CellState.BULB
+
+        if [row, col+1] in empty_cells:
+            empty_cells.remove([row, col+1])
+
+        domain_change(domain_of_empty_cell, row, col+1, CellState.BULB)
+        if is_state_valid(puzzle) and check_no_empty_domain(domain_of_empty_cell, empty_cells):
+            count += 1
+
+    return count == 1
+
+def pre_process_puzzle(puzzle, domain_of_empty_cell, empty_cell):
+
+    """
+    # Pre-processing the given puzzle by placing bulb at sure-place
+    # For each bulb that we place, correspondingly reduce the domain of related empty cells
+    # Return True if the pre-processed puzzle is still solvable -
+    # (still in valid state and none of the empty cell has domain of size 0)
+    # or no conflict of constraints happen
+    :param puzzle: List[List[str]]
+    :return: bool
+    """
+
+    wall_cell = get_wall_cells(puzzle)
+
+    # First, reduce the domain space of all cell next to wall 0
+    for cell in wall_cell:
+        row = cell[0]
+        col = cell[1]
+
+        # If seeing a wall of number 0, reduce domain of all empty walls around it
+        if int(puzzle[row][col]) == 0:
+
+            # The upper row is still in the puzzle, and the upper cell is an empty cell
+            if row - 1 >= 0 and puzzle[row-1][col] == CellState.EMPTY:
+                take_bulb_from_cell_domain(domain_of_empty_cell, row-1, col)
+
+            if row + 1 < len(puzzle) and puzzle[row+1][col] == CellState.EMPTY:
+                take_bulb_from_cell_domain(domain_of_empty_cell, row+1, col)
+
+            if col - 1 >= 0 and puzzle[row][col-1] == CellState.EMPTY:
+                take_bulb_from_cell_domain(domain_of_empty_cell, row, col-1)
+
+            if col + 1 < len(puzzle[row]) and puzzle[row][col+1] == CellState.EMPTY:
+                take_bulb_from_cell_domain(domain_of_empty_cell, row, col+1)
+
+    # Then place bulb around wall with value 4
+    for cell in wall_cell:
+        row = cell[0]
+        col = cell[1]
+
+        # If seeing a wall of number 4, check for the domain of empty cells around it
+        # If the domain of cells around it allow bulb, place bulb into them
+        # else, this puzzle is unsolvable
+        if int(puzzle[row][col]) == 4:
+
+            # If true, 4 is at the edge of the puzzle and therefore, cannot place 4 bulbs
+            if row - 1 < 0 or col - 1 < 0 or row + 1 >= len(puzzle) or col + 1 >= len(puzzle[row]):
+                return False
+            else:
+                success = place_bulb_around_wall_4(puzzle, row, col, domain_of_empty_cell, empty_cell)
+            if not success:
+
+                return False;
+
+    # Then place bulb around wall with value 3
+    for cell in wall_cell:
+        row = cell[0]
+        col = cell[1]
+
+        # If seeing a wall of number 3, check for the domain of empty cells around it
+        # If the domain of cells around it allow exactly 3 bulbs, place bulb into them
+        # else, this puzzle is unsolvable
+        if int(puzzle[row][col]) == 3:
+
+            if wall_of_3_has_exactly_3_spots(domain_of_empty_cell, row, col):
+                success = place_bulb_around_wall_3(puzzle, row, col, domain_of_empty_cell, empty_cell)
+                if not success:
+                    return False
+
+    # Then place bulb around wall with value 2
+    for cell in wall_cell:
+        row = cell[0]
+        col = cell[1]
+
+        # If seeing a wall of number 2, check for the domain of empty cells around it
+        # If the domain of cells around it allow exactly 2 bulbs, place bulb into them
+        # else, this puzzle is unsolvable
+        if int(puzzle[row][col]) == 2:
+
+            if wall_of_2_has_exactly_2_spots(domain_of_empty_cell, row, col):
+                success = place_bulb_around_wall_2(puzzle, row, col, domain_of_empty_cell, empty_cell)
+                if not success:
+                    return False
+
+    # Then place bulb around wall with value 1
+    for cell in wall_cell:
+        row = cell[0]
+        col = cell[1]
+
+        # If seeing a wall of number 1, check for the domain of empty cells around it
+        # If the domain of cells around it allow bulb, place bulb into them
+        # else, this puzzle is unsolvable
+        if int(puzzle[row][col]) == 1:
+
+            if wall_of_1_has_exactly_1_spots(domain_of_empty_cell, row, col):
+                success = place_bulb_around_wall_1(puzzle, row, col, domain_of_empty_cell, empty_cell)
+                if not success:
+                    return False
+
+    return True
 
 # call necessary methods/algorithms to solve the puzzle as required.
 def solve_puzzle(puzzle, heuristic):
 
     empty_cell = get_empty_cells(puzzle)
+    domain_of_empty_cell = make_empty_cell_domain(puzzle)
 
-    #TODO: clean this
-
+    # TODO: clean this
     '''
     print('Initial empty cell')
     print(empty_cell)
     print('Initial domain')
+    print_domain(domain_of_empty_cell)
     '''
 
-    # We want to pre-process the numbers at edge and corner, then place possible bulbs
-    # Then generate corresponding domain and puzzle from the pre-process puzzle
-    # pre_process(puzzle, non_assigned)
-    domain_of_empty_cell = make_empty_cell_domain(puzzle)
-    # print_domain(domain_of_empty_cell)
-    # TODO: finish pre_process()
+    status = pre_process_puzzle(puzzle, domain_of_empty_cell, empty_cell)
 
-    print("Chosen heuristic: {}.".format(heuristic))
-    return forward_checking(puzzle, domain_of_empty_cell, empty_cell, heuristic)
+    # TODO: clean this
 
+    print('puzzle after pre-process')
+    print_puzzle(puzzle)
+    #print('Empty cell after pre-process')
+    #print(empty_cell)
+    print('domain after preprocess')
+    print_domain(domain_of_empty_cell)
+
+
+    if status:
+        print("Chosen heuristic: {}.".format(heuristic))
+        return forward_checking(puzzle, domain_of_empty_cell, empty_cell, heuristic)
+    else:
+        return 'failure'
 
 # receive input, process input and call necessary methods to solve the puzzle.
 def main(argv=None):
@@ -448,33 +792,34 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
 
-    arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument('--heuristic', action='store', dest='heuristic', type=str, default='h1')
+        arg_parser = argparse.ArgumentParser()
+        arg_parser.add_argument('--heuristic', action='store', dest='heuristic', type=str, default='h1')
 
-    arguments = arg_parser.parse_args(argv)
+        arguments = arg_parser.parse_args(argv)
 
-    puzzle = read_file("test.txt").get(0)
+        puzzle = read_file("test.txt").get(0)
 
-    print('The puzzle is')
-    print_puzzle(puzzle)
+        print('The puzzle is:')
+        print_puzzle(puzzle)
 
-    starting_time = time.time()
-    solution = solve_puzzle(puzzle, arguments.heuristic)
-    ending_time = time.time()
+        starting_time = time.time()
+        solution = solve_puzzle(puzzle, arguments.heuristic)
+        ending_time = time.time()
 
-    if solution == 'Too many nodes. Timeout!':
-        print('Number of nodes processed is too high!! Timeout!\nIt took {} seconds.'.format(ending_time - starting_time))
+        if solution == 'Too many nodes. Timeout!':
+            print('Number of nodes processed is too high!! Timeout!\nIt took {} seconds.'.format(ending_time - starting_time))
 
-    elif solution == 'stop':
-        print('Please retry!')
-    elif solution == 'failure':
-        print('Fail to solve this puzzle. Seems like it\'s unsolvable!!')
+        elif solution == 'stop':
+            print('Please retry!')
+        elif solution == 'failure':
+            print('Fail to solve this puzzle. Seems like it\'s unsolvable!!')
 
-    else:
-        print('*** Done! ***\nThe solution is printed out below:')
-        print_puzzle(solution)
-        print("The puzzle was solved in {} seconds.".format(ending_time - starting_time))
-    print('Visited {} nodes.'.format(node_count))
+        else:
+            print()
+            print('*** Done! ***\nThe solution is printed out below:')
+            print_puzzle(solution)
+            print("The puzzle was solved in {} seconds.".format(ending_time - starting_time))
+        print('Visited {} nodes.'.format(node_count))
 
 
 if __name__ == '__main__':
