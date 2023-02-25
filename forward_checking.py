@@ -8,64 +8,52 @@ import time
 import copy
 
 node_count = 0
-# count the number of neighbouring bulbs surrounding a cell
-def count_adjacent_bulbs(puzzle: List[List[str]], r: int, c: int) -> int:
-    num_bulbs = 0
-    if r > 0 and puzzle[r - 1][c] == 'b':
-        num_bulbs += 1
-    if r < len(puzzle) - 1 and puzzle[r + 1][c] == 'b':
-        num_bulbs += 1
-    if c > 0 and puzzle[r][c - 1] == 'b':
-        num_bulbs += 1
-    if c < len(puzzle[0]) - 1 and puzzle[r][c + 1] == 'b':
-        num_bulbs += 1
-    return num_bulbs
 
 def prioritize_bulbs(puzzle, r: int, c: int):
     moving_r = r - 1
-    while moving_r >= 0 and isinstance(puzzle[moving_r][c], int):
-        puzzle[moving_r][c] = puzzle[moving_r][c] % 2
+    while moving_r >= 0 and puzzle[moving_r][c].isdigit():
+        puzzle[moving_r][c] = str( int(puzzle[moving_r][c]) % 2 )
         moving_r -= 1
 
     moving_r = r + 1
-    while moving_r < len(puzzle) - 1 and isinstance(puzzle[moving_r][c], int):
-        puzzle[moving_r][c] = puzzle[moving_r][c] % 2
+    while moving_r < len(puzzle) - 1 and puzzle[moving_r][c].isdigit():
+        puzzle[moving_r][c] = str( int(puzzle[moving_r][c]) % 2 )
         moving_r += 1
 
     moving_c = c - 1
-    while moving_c >= 0 and isinstance(puzzle[r][moving_c], int):
-        puzzle[r][moving_c] = puzzle[r][moving_c] % 2
+    while moving_c >= 0 and puzzle[r][moving_c].isdigit():
+        puzzle[r][moving_c] = str( int(puzzle[r][moving_c]) % 2 )
         moving_c -= 1
 
     moving_c = c + 1
-    while moving_c < len(puzzle[r]) - 1 and isinstance(puzzle[r][moving_c], int):
-        puzzle[r][moving_c] = puzzle[r][moving_c] % 2
+    while moving_c < len(puzzle[r]) - 1 and puzzle[r][moving_c].isdigit():
+        puzzle[r][moving_c] = str( int(puzzle[r][moving_c]) % 2 )
         moving_c += 1
 
 
 def prioritize_walls(puzzle, r, c):
     moving_r = r - 1
-    if r > 0 and isinstance(puzzle[moving_r][c], int):
-        puzzle[moving_r][c] = int(puzzle[moving_r][c] / 2) * 2
-        if puzzle[moving_r][c] == 2:
+    if r > 0 and puzzle[moving_r][c].isdigit():
+        puzzle[moving_r][c] = str( int(int(puzzle[moving_r][c]) / 2) * 2 )
+        if int(puzzle[moving_r][c]) == 2:
             prioritize_bulbs(puzzle, moving_r, c)
 
     moving_r = r + 1
-    if r < len(puzzle) - 1 and isinstance(puzzle[moving_r][c], int):
-        puzzle[moving_r][c] = int(puzzle[moving_r][c] / 2) * 2
-        if puzzle[moving_r][c] == 2:
+    if r < len(puzzle) - 1 and puzzle[moving_r][c].isdigit():
+        puzzle[moving_r][c] = str( int(int(puzzle[moving_r][c]) / 2) * 2 )
+        if int(puzzle[moving_r][c]) == 2:
             prioritize_bulbs(puzzle, moving_r, c)
 
     moving_c = c - 1
-    if c > 0 and isinstance(puzzle[r][moving_c], int):
-        puzzle[r][moving_c] = int(puzzle[r][moving_c] / 2) * 2
-        if puzzle[r][moving_c] == 2:
+    if c > 0 and puzzle[r][moving_c].isdigit():
+        puzzle[r][moving_c] = str( int(int(puzzle[r][moving_c]) / 2) * 2 )
+        if int(puzzle[r][moving_c]) == 2:
             prioritize_bulbs(puzzle, r, moving_c)
 
     moving_c = c + 1
-    if c < len(puzzle[0]) - 1 and isinstance(puzzle[r][moving_c], int):
-        puzzle[r][moving_c] = int(puzzle[r][moving_c] / 2) * 2
-        if puzzle[r][moving_c] == 2:
+    if c < len(puzzle[0]) - 1 and puzzle[r][moving_c].isdigit():
+        puzzle[r][moving_c] = str( int(int(puzzle[r][moving_c]) / 2) * 2 )
+        if int(puzzle[r][moving_c]) == 2:
             prioritize_bulbs(puzzle, r, moving_c)
 
 
@@ -86,13 +74,13 @@ def generate_potential_bulbs_to_wall(curr_state, row, col):
     num_bulbs = 0
 
     # check all for neighbours
-    if row > 0 and isinstance(curr_state[row - 1][col], int) and curr_state[row - 1][col] >= 2:
+    if row > 0 and curr_state[row - 1][col].isdigit() and int(curr_state[row - 1][col]) >= 2:
         num_bulbs += 1
-    if row < len(curr_state) - 1 and isinstance(curr_state[row + 1][col], int) and curr_state[row + 1][col] >= 2:
+    if row < len(curr_state) - 1 and curr_state[row + 1][col].isdigit() and int(curr_state[row + 1][col]) >= 2:
         num_bulbs += 1
-    if col > 0 and isinstance(curr_state[row][col - 1], int) and curr_state[row][col - 1] >= 2:
+    if col > 0 and (curr_state[row][col - 1].isdigit()) and int(curr_state[row][col - 1]) >= 2:
         num_bulbs += 1
-    if col < len(curr_state[0]) - 1 and isinstance(curr_state[row][col + 1], int) and curr_state[row][col + 1] >= 2:
+    if col < len(curr_state[0]) - 1 and curr_state[row][col + 1].isdigit() and int(curr_state[row][col + 1]) >= 2:
         num_bulbs += 1
     return num_bulbs
 
@@ -146,9 +134,9 @@ def check_curr_sol_for_feasibility(curr_state, non_assigned_cells) -> bool:
     # Iterating the entire puzzle and set the puzzle to normal ????
     for row in range(len(curr_state)):
         for col in range(len(curr_state[row])):
-            if isinstance(curr_state[row][col], int):
-            #if curr_state[row][col].isdigit():
-                if curr_state[row][col] == 0:
+            #if isinstance(curr_state[row][col], int):
+            if curr_state[row][col].isdigit():
+                if int(curr_state[row][col]) == 0:
                     result = False
                 curr_state[row][col] = '_'
 
@@ -183,15 +171,11 @@ def forward_checking(puzzle, domain, empty_cells, heuristic):
     if node_count % 10000 == 0:
         print('\rAlready processed {} nodes.'.format(node_count))
 
-    if node_count == 500000:
-        return 'Number of nodes processed is too high!! Timeout!'
+    if node_count == 270000:
+        return 'Too many nodes. Timeout!'
 
     if is_solved(puzzle):
         return puzzle
-
-    # backtrack if the current solution is at dead end
-    if len(empty_cells) == 0 and check_curr_sol_for_feasibility(puzzle, empty_cells):
-        return 'backtrack'
 
     next_potential_cells = []
 
@@ -204,37 +188,180 @@ def forward_checking(puzzle, domain, empty_cells, heuristic):
         next_potential_cells = h3(puzzle, empty_cells)  # Hybrid
     else:
         print('\n*** ERROR *** Heuristic must be either "most_constrained", "most_constraining" or "hybrid".')
-        return 'Abort!!'
+        return 'Abort!!' \
 
     # If we have more than 1 chosen cells, randomly pick 1
     # else, pick the only one we have
     next_cell = []
     if len(next_potential_cells) >= 1:
         next_cell = next_potential_cells[random.randint(0, len(next_potential_cells) - 1)]
+    else:    # We have no empty cell to consider, and the puzzle is still not solved, so backtrack here!
+        #print("backtrack as we have no empty cell to work with")
+        return 'backtrack'
 
-    # remove the cell chosen above from the list of empty cells
-    empty_cells.remove(next_cell)
+    # remove the cell chosen above from the list of temporary empty cells
+    temp_empty_cells = copy.deepcopy(empty_cells)
+    temp_empty_cells.remove(next_cell)
+
+    # TODO: clean this
+    '''
+    print()
+    print('next cell is')
+    print(next_cell)
+    print('temp empty cell is')
+    print(temp_empty_cells)
+    '''
 
     row, col = next_cell[0], next_cell[1]
 
-    for value in domain:
-        puzzle[row][col] = value
-        #TODO: do we really need the first half of the if statement? If yes, modify ccan_bulb_be_here, else delete it
+    # Get the domain of the cell we chose
+    this_var_domain = domain[row][col]
 
-        # If we place a bulb down, and the placement is valid
-        # or if we choose not to place bulb
-        # we can keep solving (recursive call)
-        if value == CellState.EMPTY or ( value == CellState.BULB and is_valid_bulb(puzzle, row, col) ):
-            result = forward_checking(puzzle, domain, empty_cells, heuristic)
-            if result != 'backtrack':
+    # Try each value in the domain of the chosen variable
+    #for value in this_var_domain:
+    for i in range(len(this_var_domain)):
+
+        value = this_var_domain[i];
+
+        # TODO: clean this
+        #print('value for cell {} {} is {}'.format(row, col, value))
+
+        # Create a copy of the current puzzle state for variable assignment
+        temp_puzzle = copy.deepcopy(puzzle)
+
+        temp_puzzle[row][col] = value
+
+        # TODO: clean this
+        #print("puzzle after changing the cell")
+        #print_puzzle(temp_puzzle)
+
+        temp_domain = copy.deepcopy(domain)
+
+        domain_change(temp_domain, row, col, value)
+
+        #TODO: clean this
+        '''
+        print('domain before change')
+        print_domain(domain)
+        print("domain after changing the cell")
+        print_domain(temp_domain)
+        '''
+
+        no_empty_domain = check_no_empty_domain( temp_domain, temp_empty_cells )
+
+        if is_state_valid(temp_puzzle) and no_empty_domain:
+            result = forward_checking(temp_puzzle, temp_domain, temp_empty_cells, heuristic)
+            if result != 'backtrack' and result != 'failure':
                 return result
 
-    # At this point, the deeper recursion has failed for all values in the domain
-    # so we append the empty cell we just chose, then backtrack
-    # TODO: shouldn't the puzzle be rocovered to its original state b4 the loop?
-    empty_cells.append(next_cell)
-    return 'backtrack'
+    return 'failure'
 
+def is_domain_of_empty_cell(domain, row, col):
+
+    """
+    Return true if the domain is not the domain of a wall
+    :param domain: List[List[List[String]]] - The domain of each cell. Domain values are "wall", "_" or "b
+    :param row: int - row index of the given
+    :param col: int - col index of the given
+    :return:
+    """
+
+    result = False
+
+    if len(domain[row][col]) > 1:
+        result = True
+    elif len(domain[row][col]) == 1 and domain[row][col][0] != 'wall':
+        result = True
+    elif len(domain[row][col]) == 0:
+        result = True
+
+    return result
+
+def domain_change(domain, row, col, value):
+    """
+    # With the row-col coordinate of a chosen cell and the new value of that cell, if the new value is 'b'
+    # then modifying all the '_' cell that the chosen cell could "see" by excluding "b" out of their domain
+    # If the new value is '_', nothing to do
+    :param domain: List[List[List[String]]] - The domain of each cell. Domain values are "wall", "_" or "b"
+    :param row: int - row index of the cell that got assigned variable
+    :param col: int - col index of the cell that got assigned variable
+    :param value: the value of the variable (either'_' or 'b'
+    :return: List[List[List[String] - the domain that is modified
+    """
+
+    #TODO: remove this after finish
+    '''
+    print('in domain change function, the domain passed in is:')
+    print_domain(domain)
+    '''
+
+    if value == CellState.BULB:
+
+        travel_dist = 1
+
+        # Keep travel if we still in domain map, and the cell domain we are looking at is not wall
+
+        # Up
+        while row - travel_dist >= 0 and is_domain_of_empty_cell(domain, row - travel_dist, col):
+            # We only remove if the domain has size 2, or only has bulb left
+            if len(domain[row - travel_dist][col]) == 2:
+                domain[row - travel_dist][col].remove('b')
+            elif len(domain[row - travel_dist][col]) == 1 and domain[row - travel_dist][col][0] == CellState.BULB:
+                domain[row - travel_dist][col].remove('b')
+            travel_dist += 1
+
+        travel_dist = 1
+
+        # Down
+        while row + travel_dist < len(domain) and is_domain_of_empty_cell(domain, row + travel_dist, col):
+            if len(domain[row + travel_dist][col]) == 2:
+                domain[row + travel_dist][col].remove('b')
+            elif len(domain[row + travel_dist][col]) == 1 and domain[row + travel_dist][col][0] == CellState.BULB:
+                domain[row + travel_dist][col].remove('b')
+            travel_dist += 1
+
+        travel_dist = 1
+
+        # To the left
+        while col - travel_dist >= 0 and is_domain_of_empty_cell(domain, row, col - travel_dist):
+            if len(domain[row][col - travel_dist]) == 2:
+                domain[row][col - travel_dist].remove('b')
+            elif len(domain[row][col - travel_dist]) == 1 and domain[row][col - travel_dist][0] == CellState.BULB:
+                domain[row][col - travel_dist].remove('b')
+            travel_dist += 1
+
+        travel_dist = 1
+
+        # To the right
+        while col + travel_dist < len(domain[0]) and is_domain_of_empty_cell(domain, row, col + travel_dist):
+            if len(domain[row][col + travel_dist]) == 2:
+                domain[row][col + travel_dist].remove('b')
+            elif len(domain[row][col + travel_dist]) == 1 and domain[row][col + travel_dist][0] == CellState.BULB:
+                domain[row][col + travel_dist].remove('b')
+            travel_dist += 1
+
+def check_no_empty_domain( domain, empty_cells ):
+
+    """
+    # Check domain of each empty cell
+    # Return false if any empty cell has domain of len 0
+    :param domain: List[List[List[String]]] - The domain of each cell. Domain values are "wall", "_" or "b"
+    :param empty_cells: List[List[int]] - The coordinate of each empty cell
+    :return: bool
+    """
+
+    #TODO: remove this at the end
+    '''
+    print('in bool function, the empty cell passed in is:')
+    print(empty_cells)
+    print('in bool function, the domain passed in is:')
+    '''
+
+    for cell in empty_cells:
+        if len( domain[cell[0]][cell[1]] ) == 0:
+            return False
+
+    return True
 
 # get all the empty cells in the map, which are potential places for bulbs.
 def get_empty_cells(puzzle: List[List[str]]) -> List[List[int]]:
@@ -253,14 +380,66 @@ def get_empty_cells(puzzle: List[List[str]]) -> List[List[int]]:
 
     return empty_cells
 
+def print_domain(domain):
+
+    for row in range(len(domain)):
+        for col in range(len(domain[row])):
+            str = ''
+            if len(domain[row][col]) > 1:
+                str = domain[row][col][0] + '/' + domain[row][col][1]
+            else:
+                str = domain[row][col][0]
+            if col == len(domain[0]) - 1:
+                print(str)
+            else:
+                print(str, end='     ')
+
+def make_empty_cell_domain(puzzle):
+    """
+    # If a cell is a wall, its domain is ['wall'] and will never be modified
+    # If a domain is an empty cell ('_'), its domain could be ['_'], ['b'] or ['_','b']
+    # domain[r][c] is the domain of the cell at row r and col c
+    :param puzzle: List[List[str]] - the given puzzle
+    :return: List[List[List[str]] - the domain values of each cell
+    """
+    row_num = range(len(puzzle))
+    col_num = range(len(puzzle[0]))
+    domain_of_empty_cell = [[[] for row in row_num] for col in col_num]
+
+    for row in range(len(puzzle)):
+        for col in range(len(puzzle[row])):
+            if puzzle[row][col].isdigit():
+                domain_of_empty_cell[row][col].append('wall')
+            else:
+                domain_of_empty_cell[row][col].append('b')
+                domain_of_empty_cell[row][col].append('_')
+
+
+    return domain_of_empty_cell
+
+
 # call necessary methods/algorithms to solve the puzzle as required.
 def solve_puzzle(puzzle, heuristic):
-    domain = ('b', '_')
-    non_assigned = get_empty_cells(puzzle)
-    # TODO: finish pre_process()
+
+    empty_cell = get_empty_cells(puzzle)
+
+    #TODO: clean this
+
+    '''
+    print('Initial empty cell')
+    print(empty_cell)
+    print('Initial domain')
+    '''
+
+    # We want to pre-process the numbers at edge and corner, then place possible bulbs
+    # Then generate corresponding domain and puzzle from the pre-process puzzle
     # pre_process(puzzle, non_assigned)
+    domain_of_empty_cell = make_empty_cell_domain(puzzle)
+    # print_domain(domain_of_empty_cell)
+    # TODO: finish pre_process()
+
     print("Chosen heuristic: {}.".format(heuristic))
-    return forward_checking(puzzle, domain, non_assigned, heuristic)
+    return forward_checking(puzzle, domain_of_empty_cell, empty_cell, heuristic)
 
 
 # receive input, process input and call necessary methods to solve the puzzle.
@@ -270,12 +449,13 @@ def main(argv=None):
         argv = sys.argv[1:]
 
     arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument('--heuristic', action='store', dest='heuristic', type=str, default='h3')
+    arg_parser.add_argument('--heuristic', action='store', dest='heuristic', type=str, default='h1')
 
     arguments = arg_parser.parse_args(argv)
 
-    # TODO: check if read_file works the same as read_puzzle()
     puzzle = read_file("test.txt").get(0)
+
+    print('The puzzle is')
     print_puzzle(puzzle)
 
     starting_time = time.time()
@@ -283,10 +463,12 @@ def main(argv=None):
     ending_time = time.time()
 
     if solution == 'Too many nodes. Timeout!':
-        print('Too many nodes. Timeout.\nIt took {} seconds.'.format(ending_time - starting_time))
+        print('Number of nodes processed is too high!! Timeout!\nIt took {} seconds.'.format(ending_time - starting_time))
 
     elif solution == 'stop':
         print('Please retry!')
+    elif solution == 'failure':
+        print('Fail to solve this puzzle. Seems like it\'s unsolvable!!')
 
     else:
         print('*** Done! ***\nThe solution is printed out below:')
