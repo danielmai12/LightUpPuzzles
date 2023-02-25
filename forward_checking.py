@@ -9,7 +9,7 @@ import copy
 
 node_count = 0
 
-def forward_checking(puzzle, domain, empty_cells, heuristic):
+def forward_checking(puzzle, domain, empty_cells, wall_cells, heuristic):
 
     """
     :param puzzle: List[List[str]]
@@ -104,13 +104,47 @@ def forward_checking(puzzle, domain, empty_cells, heuristic):
         '''
 
         no_empty_domain = check_no_empty_domain( temp_domain, temp_empty_cells )
+        #feasible_for_all_wall = check_wall_feasibility( temp_puzzle, temp_domain, wall_cells)
 
-        if is_state_valid(temp_puzzle) and no_empty_domain:
-            result = forward_checking(temp_puzzle, temp_domain, temp_empty_cells, heuristic)
+        if is_state_valid(temp_puzzle) and no_empty_domain:# and feasible_for_all_wall:
+            result = forward_checking(temp_puzzle, temp_domain, temp_empty_cells, wall_cells, heuristic)
             if result != 'backtrack' and result != 'failure':
                 return result
 
     return 'failure'
+
+def check_wall_feasibility( puzzle, domain, wall_cells):
+    """
+    # Check the surrounding of each wall
+    # Return true if for each wall, the number of cells around it that could accept a bulb is lmore than or euqal
+    # to wall value
+    :param puzzle: List[List[str]]
+    :param domain: List[List[List[String]]] - The domain of each cell. Domain values are "wall", "_" or "b
+    :param wall_cells: List[List[int]] - the coordinates of the walls
+    :return: bool
+    """
+
+    for cell in wall_cells:
+
+        row = cell[0]
+        col = cell[1]
+
+        wall_value = int(puzzle[row][col])
+        count = 0
+
+        if row - 1 >= 0 and CellState.BULB in domain[row - 1][col]:
+            count += 1
+
+        if row + 1 < len(domain) and CellState.BULB in domain[row + 1][col]:
+            count += 1
+
+        if col - 1 >= 0 and CellState.BULB in domain[row][col - 1]:
+            count += 1
+
+        if col + 1 < len(domain[0]) and CellState.BULB in domain[row][col + 1]:
+            count += 1
+
+        return count >= wall_value
 
 def is_domain_of_empty_cell(domain, row, col):
 
@@ -177,10 +211,6 @@ def domain_change(domain, row, col, value):
             travel_dist += 1
 
         travel_dist = 1
-
-        if row == 8 and col == 5:
-            print("Evaluate of the while loop is:")
-            print(col - travel_dist >= 0 and is_domain_of_empty_cell(domain, row, col - travel_dist))
 
         # To the left
         while col - travel_dist >= 0 and is_domain_of_empty_cell(domain, row, col - travel_dist):
@@ -757,7 +787,7 @@ def pre_process_puzzle(puzzle, domain_of_empty_cell, empty_cell):
 # call necessary methods/algorithms to solve the puzzle as required.
 def solve_puzzle(puzzle, heuristic):
 
-    empty_cell = get_empty_cells(puzzle)
+    empty_cells = get_empty_cells(puzzle)
     domain_of_empty_cell = make_empty_cell_domain(puzzle)
 
     # TODO: clean this
@@ -768,7 +798,7 @@ def solve_puzzle(puzzle, heuristic):
     print_domain(domain_of_empty_cell)
     '''
 
-    status = pre_process_puzzle(puzzle, domain_of_empty_cell, empty_cell)
+    status = pre_process_puzzle(puzzle, domain_of_empty_cell, empty_cells)
 
     # TODO: clean this
 
@@ -779,10 +809,11 @@ def solve_puzzle(puzzle, heuristic):
     print('domain after preprocess')
     print_domain(domain_of_empty_cell)
 
+    wall_cells = get_wall_cells(puzzle)
 
     if status:
         print("Chosen heuristic: {}.".format(heuristic))
-        return forward_checking(puzzle, domain_of_empty_cell, empty_cell, heuristic)
+        return forward_checking(puzzle, domain_of_empty_cell, empty_cells, wall_cells, heuristic)
     else:
         return 'failure'
 
