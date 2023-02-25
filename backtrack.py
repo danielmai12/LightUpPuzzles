@@ -20,20 +20,18 @@ class HeuristicMode:
 
 
 def initialize(puzzle):
-    available_cells = []
     candidates = []
 
     for row in range(len(puzzle)):
         for col in range(len(puzzle[0])):
             if puzzle[row][col] == CellState.EMPTY:
-                available_cells.append((row, col))
                 candidates.append((row, col))
 
-    return available_cells, candidates
+    return candidates
 
 
 def backtrack(initial_state, heuristic=HeuristicMode.NONE):
-    available_cells, candidates = initialize(initial_state)
+    candidates = initialize(initial_state)
     domain = (CellState.BULB, CellState.EMPTY)
     solutions = []
     temp_state = initial_state.copy()
@@ -53,6 +51,11 @@ def backtrack_recursive(curr_state, candidates, domain, solutions, heuristic):
     """
     - Implement backtracking algorithm using DFS
     - Improvements by heuristics: None - H1 - H2 - H3
+    @:param cur_state: 2-d puzzle board
+    @:param candidates: list of empty cells
+    @:param domain: BULB & EMPTY
+    @:param solutions: contains the solution if exists
+    @:param heuristic: NONE, H1, H2, H3
     """
     global nodes
 
@@ -95,9 +98,9 @@ def backtrack_recursive(curr_state, candidates, domain, solutions, heuristic):
 
 
 def trivial_solve(curr_state, candidates):
-    """ Place all the light bulbs which can be placed for sure. This can be
-    done if there are exactly 'n' candidates neighbour of a 'n' constrained
-    wall. Repeat this process until it does not work anymore. """
+    """ Place all the light bulbs which can be placed for sure.
+        This can be done if there are exactly n neighbour of a constrained wall (n).
+    """
 
     walls = []
     for row in range(len(curr_state)):
