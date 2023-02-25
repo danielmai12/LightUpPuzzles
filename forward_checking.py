@@ -104,9 +104,9 @@ def forward_checking(puzzle, domain, empty_cells, wall_cells, heuristic):
         '''
 
         no_empty_domain = check_no_empty_domain( temp_domain, temp_empty_cells )
-        #feasible_for_all_wall = check_wall_feasibility( temp_puzzle, temp_domain, wall_cells)
+        feasible_for_all_wall = check_wall_feasibility( temp_puzzle, temp_domain, wall_cells)
 
-        if is_state_valid(temp_puzzle) and no_empty_domain:# and feasible_for_all_wall:
+        if is_state_valid(temp_puzzle) and no_empty_domain and feasible_for_all_wall:
             result = forward_checking(temp_puzzle, temp_domain, temp_empty_cells, wall_cells, heuristic)
             if result != 'backtrack' and result != 'failure':
                 return result

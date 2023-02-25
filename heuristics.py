@@ -36,7 +36,7 @@ def h2(curr_state, available_cells):
     cells = []
     max_count = 0
 
-    light_up_puzzle(curr_state)
+    #light_up_puzzle(curr_state)
 
     for cell in available_cells:
         to_be_lit_up = num_cells_light(curr_state, cell[0], cell[1])
@@ -45,7 +45,7 @@ def h2(curr_state, available_cells):
             max_count = to_be_lit_up
         elif to_be_lit_up == max_count:
             cells.append(cell)
-    unlit_map(curr_state)
+    #unlit_map(curr_state)
 
     return cells
 
