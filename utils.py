@@ -16,7 +16,7 @@ def read_file(filename):
         if line[0] != "#":
             line = line.split()
             rows, cols = int(line[0].strip()), int(line[1].strip())
-            puzzle_dict[count] = [[0 for x in range(cols)] for y in range(rows)]
+            puzzle_dict[count] = [['' for x in range(cols)] for y in range(rows)]
 
             for row in range(rows):
                 line = file.readline()
@@ -227,8 +227,9 @@ def unlit_map(curr_state):
     # if we  see _, replace it with '_'
     for row in range(len(curr_state)):
         for col in range(len(curr_state[row])):
-            if curr_state[row][col] == '*':
-                curr_state[row][col] = '_'
+            if curr_state[row][col] == CellState.LIGHT:
+                curr_state[row][col] = CellState.EMPTY
+
 
 # Check if a given cell is inside the current puzzle
 def is_in_bounds(curr_state, row, col):
@@ -240,6 +241,7 @@ def is_in_bounds(curr_state, row, col):
     """
 
     return 0 <= row < len(curr_state) and 0 <= col < len(curr_state)
+
 
 # Given a cell, check the surrounding to see if the bulb can be placed there
 def is_valid_bulb(curr_state, row, col):
@@ -261,12 +263,23 @@ def is_valid_bulb(curr_state, row, col):
 
     return True
 
+
 def is_solved(curr_state):
+    rows = len(curr_state)
+    cols = len(curr_state)
+
+    for row in range(rows):
+        for col in range(cols):
+            if curr_state[row][col].isdigit() and int(curr_state[row][col]) != num_adjacent_lights(curr_state, row, col):
+                return False
+            if curr_state[row][col] == CellState.BULB and not is_valid_bulb(curr_state, row, col):
+                return False
+
     light_up_puzzle(curr_state)
     is_all_light_up = is_map_lit_entirely(curr_state)
     unlit_map(curr_state)
 
-    return is_all_light_up and is_state_valid(curr_state)
+    return is_all_light_up
 
 
 def is_state_valid(curr_state):
