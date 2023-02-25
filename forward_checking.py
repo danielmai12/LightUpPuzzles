@@ -2,12 +2,12 @@ from heuristics import *
 
 import argparse
 import sys
-from typing import List
 import random
 import time
 import copy
 
 node_count = 0
+
 
 def forward_checking(puzzle, domain, empty_cells, wall_cells, heuristic):
 
@@ -59,52 +59,26 @@ def forward_checking(puzzle, domain, empty_cells, wall_cells, heuristic):
     temp_empty_cells = copy.deepcopy(empty_cells)
     temp_empty_cells.remove(next_cell)
 
-    # TODO: clean this
-    '''
-    print()
-    print('next cell is')
-    print(next_cell)
-    print('temp empty cell is')
-    print(temp_empty_cells)
-    '''
-
     row, col = next_cell[0], next_cell[1]
 
     # Get the domain of the cell we chose
     this_var_domain = domain[row][col]
 
     # Try each value in the domain of the chosen variable
-    #for value in this_var_domain:
     for i in range(len(this_var_domain)):
-
-        value = this_var_domain[i];
-
-        # TODO: clean this
-        #print('value for cell {} {} is {}'.format(row, col, value))
+        value = this_var_domain[i]
 
         # Create a copy of the current puzzle state for variable assignment
         temp_puzzle = copy.deepcopy(puzzle)
 
         temp_puzzle[row][col] = value
 
-        # TODO: clean this
-        #print("puzzle after changing the cell")
-        #print_puzzle(temp_puzzle)
-
         temp_domain = copy.deepcopy(domain)
 
         domain_change(temp_domain, row, col, value)
 
-        #TODO: clean this
-        '''
-        print('domain before change')
-        print_domain(domain)
-        print("domain after changing the cell")
-        print_domain(temp_domain)
-        '''
-
-        no_empty_domain = check_no_empty_domain( temp_domain, temp_empty_cells )
-        feasible_for_all_wall = check_wall_feasibility( temp_puzzle, temp_domain, wall_cells)
+        no_empty_domain = check_no_empty_domain(temp_domain, temp_empty_cells)
+        feasible_for_all_wall = check_wall_feasibility(temp_puzzle, temp_domain, wall_cells)
 
         if is_state_valid(temp_puzzle) and no_empty_domain and feasible_for_all_wall:
             result = forward_checking(temp_puzzle, temp_domain, temp_empty_cells, wall_cells, heuristic)
@@ -113,7 +87,8 @@ def forward_checking(puzzle, domain, empty_cells, wall_cells, heuristic):
 
     return 'failure'
 
-def check_wall_feasibility( puzzle, domain, wall_cells):
+
+def check_wall_feasibility(puzzle, domain, wall_cells):
     """
     # Check the surrounding of each wall
     # Return true if for each wall, the number of cells around it that could accept a bulb is lmore than or euqal
@@ -146,6 +121,7 @@ def check_wall_feasibility( puzzle, domain, wall_cells):
 
         return count >= wall_value
 
+
 def is_domain_of_empty_cell(domain, row, col):
 
     """
@@ -166,6 +142,7 @@ def is_domain_of_empty_cell(domain, row, col):
         result = True
 
     return result
+
 
 def domain_change(domain, row, col, value):
     """
@@ -233,6 +210,7 @@ def domain_change(domain, row, col, value):
                 domain[row][col + travel_dist].remove('b')
             travel_dist += 1
 
+
 def check_no_empty_domain( domain, empty_cells ):
 
     """
@@ -256,6 +234,7 @@ def check_no_empty_domain( domain, empty_cells ):
 
     return True
 
+
 def get_empty_cells(puzzle):
 
     """
@@ -272,6 +251,7 @@ def get_empty_cells(puzzle):
                 empty_cells.append([row, col])
 
     return empty_cells
+
 
 def get_wall_cells(puzzle):
 
@@ -290,6 +270,7 @@ def get_wall_cells(puzzle):
 
     return wall_cells
 
+
 def print_domain(domain):
 
     for row in range(len(domain)):
@@ -303,6 +284,7 @@ def print_domain(domain):
                 print(str)
             else:
                 print(str, end='     ')
+
 
 def make_empty_cell_domain(puzzle):
     """
@@ -324,8 +306,8 @@ def make_empty_cell_domain(puzzle):
                 domain_of_empty_cell[row][col].append('b')
                 domain_of_empty_cell[row][col].append('_')
 
-
     return domain_of_empty_cell
+
 
 def take_bulb_from_cell_domain(domain, row, col):
     """
@@ -339,6 +321,7 @@ def take_bulb_from_cell_domain(domain, row, col):
 
     if CellState.BULB in domain[row][col]:
         domain[row][col].remove(CellState.BULB)
+
 
 def place_bulb_around_wall_4(puzzle, row, col, domain_of_empty_cell, empty_cells):
     """
@@ -369,7 +352,6 @@ def place_bulb_around_wall_4(puzzle, row, col, domain_of_empty_cell, empty_cells
     else:
         validPuzzle = False
 
-
     if validPuzzle and CellState.BULB in domain_of_empty_cell[row+1][col]:
         puzzle[row+1][col] = CellState.BULB
 
@@ -381,7 +363,6 @@ def place_bulb_around_wall_4(puzzle, row, col, domain_of_empty_cell, empty_cells
     else:
         validPuzzle = False
 
-
     if validPuzzle and CellState.BULB in domain_of_empty_cell[row][col-1]:
         puzzle[row][col-1] = CellState.BULB
 
@@ -392,7 +373,6 @@ def place_bulb_around_wall_4(puzzle, row, col, domain_of_empty_cell, empty_cells
         validPuzzle = is_state_valid(puzzle) and check_no_empty_domain( domain_of_empty_cell, empty_cells )
     else:
         validPuzzle = False
-
 
     if validPuzzle and CellState.BULB in domain_of_empty_cell[row][col+1]:
         puzzle[row][col+1] = CellState.BULB
@@ -406,6 +386,7 @@ def place_bulb_around_wall_4(puzzle, row, col, domain_of_empty_cell, empty_cells
         validPuzzle = False
 
     return validPuzzle
+
 
 def wall_of_3_has_exactly_3_spots(domain, row, col):
 
@@ -434,6 +415,7 @@ def wall_of_3_has_exactly_3_spots(domain, row, col):
         count += 1
 
     return count == 3
+
 
 def place_bulb_around_wall_3(puzzle, row, col, domain_of_empty_cell, empty_cells):
 
@@ -499,6 +481,7 @@ def place_bulb_around_wall_3(puzzle, row, col, domain_of_empty_cell, empty_cells
 
     return count == 3
 
+
 def wall_of_2_has_exactly_2_spots(domain, row, col):
 
     """
@@ -526,6 +509,7 @@ def wall_of_2_has_exactly_2_spots(domain, row, col):
         count += 1
 
     return count == 2
+
 
 def place_bulb_around_wall_2(puzzle, row, col, domain_of_empty_cell, empty_cells):
 
@@ -591,6 +575,7 @@ def place_bulb_around_wall_2(puzzle, row, col, domain_of_empty_cell, empty_cells
 
     return count == 2
 
+
 def wall_of_1_has_exactly_1_spots(domain, row, col):
 
     """
@@ -618,6 +603,7 @@ def wall_of_1_has_exactly_1_spots(domain, row, col):
         count += 1
 
     return count == 1
+
 
 def place_bulb_around_wall_1(puzzle, row, col, domain_of_empty_cell, empty_cells):
 
@@ -682,6 +668,7 @@ def place_bulb_around_wall_1(puzzle, row, col, domain_of_empty_cell, empty_cells
             count += 1
 
     return count == 1
+
 
 def pre_process_puzzle(puzzle, domain_of_empty_cell, empty_cell):
 
@@ -784,28 +771,17 @@ def pre_process_puzzle(puzzle, domain_of_empty_cell, empty_cell):
 
     return True
 
+
 # call necessary methods/algorithms to solve the puzzle as required.
 def solve_puzzle(puzzle, heuristic):
 
     empty_cells = get_empty_cells(puzzle)
     domain_of_empty_cell = make_empty_cell_domain(puzzle)
 
-    # TODO: clean this
-    '''
-    print('Initial empty cell')
-    print(empty_cell)
-    print('Initial domain')
-    print_domain(domain_of_empty_cell)
-    '''
-
     status = pre_process_puzzle(puzzle, domain_of_empty_cell, empty_cells)
-
-    # TODO: clean this
 
     print('puzzle after pre-process')
     print_puzzle(puzzle)
-    #print('Empty cell after pre-process')
-    #print(empty_cell)
     print('domain after preprocess')
     print_domain(domain_of_empty_cell)
 
@@ -816,6 +792,7 @@ def solve_puzzle(puzzle, heuristic):
         return forward_checking(puzzle, domain_of_empty_cell, empty_cells, wall_cells, heuristic)
     else:
         return 'failure'
+
 
 # receive input, process input and call necessary methods to solve the puzzle.
 def main(argv=None):

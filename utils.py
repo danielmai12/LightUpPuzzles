@@ -295,3 +295,19 @@ def is_state_valid(curr_state):
 
     return True
 
+def num_adjacent_neighbors(puzzle, row, col):
+    # count how many walls surround the given cell (row, col)
+    num_walls = 0
+    rows = len(puzzle)
+    cols = len(puzzle)
+
+    if row > 0:  # down
+        num_walls += 1
+    if row < rows:  # up
+        num_walls += 1
+    if col > 0:  # left
+        num_walls += 1
+    if col < cols - 1:  # right
+        num_walls += 1
+
+    return num_walls
