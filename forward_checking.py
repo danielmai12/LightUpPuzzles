@@ -793,9 +793,9 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
 
-        arg_parser = argparse.ArgumentParser()
+        arg_parser = argparse.ArgumentParser(add_help=False)
         arg_parser.add_argument('--p', action='store', dest='file_name', type=str, default='test.txt')
-        arg_parser.add_argument('--heuristic', action='store', dest='heuristic', type=str, default='H3')
+        arg_parser.add_argument('--h', action='store', dest='heuristic', type=str, default='H3')
 
         arguments = arg_parser.parse_args(argv)
         file_name = arguments.file_name

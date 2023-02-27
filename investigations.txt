@@ -76,17 +76,17 @@ The following tables are the average number of nodes  and runtime generated for 
 ------------------------------------------------------------------------------------
 |    Forward    |       H2      |       48        |      48        |  0.0349233    |
 ------------------------------------------------------------------------------------
-|    Forward    |       H3      |       12        |Time out (500k) |    235.5793259|
+|    Forward    |       H3      |       12        |Time out (500k) |  235.5793259  |
 ------------------------------------------------------------------------------------
-|    Forward    |       H3      |       24        |      55        |    0.0398933  |
+|    Forward    |       H3      |       24        |      55        |  0.0398933    |
 ------------------------------------------------------------------------------------
-|    Forward    |       H3      |       48        |      14        |    0.014955   |
+|    Forward    |       H3      |       48        |      14        |  0.014955     |
 ------------------------------------------------------------------------------------
 
 
 ** Summary for Forward Checking **
 On average, the runtime is H3 < H1 < H2. This implementation of forward checking can handle up to 10x10 with high probability of
-success. However, on larger puzzle size, the chane of the searching algorithm times out is proportionally higher.
+success. However, on larger puzzle size, the chance of the searching algorithm times out is proportionally higher.
 
 Number of walls on a puzzle, as well as wall value distribution has significant impact on running time. On a same puzzle size, as the
 number of wall increases, the number of empty cells decreases linearly, which leads to less branching. Also, more walls means more
