@@ -1,4 +1,5 @@
 from heuristics import *
+import numpy as np
 
 import argparse
 import sys
@@ -27,7 +28,7 @@ def forward_checking(puzzle, domain, empty_cells, wall_cells, heuristic):
     if node_count % 10000 == 0:
         print('\rAlready processed {} nodes.'.format(node_count))
 
-    if node_count == 270000:
+    if node_count == 500000:
         return 'Too many nodes. Timeout!'
 
     if is_solved(puzzle):
@@ -195,9 +196,6 @@ def domain_change(domain, row, col, value):
                 domain[row][col - travel_dist].remove('b')
             elif len(domain[row][col - travel_dist]) == 1 and domain[row][col - travel_dist][0] == CellState.BULB:
                 domain[row][col - travel_dist].remove('b')
-            if row == 8 and col == 5:
-                print("Domain is:")
-                print(domain[row][col - travel_dist])
             travel_dist += 1
 
         travel_dist = 1
@@ -797,15 +795,22 @@ def main(argv=None):
 
         arg_parser = argparse.ArgumentParser()
         arg_parser.add_argument('--p', action='store', dest='file_name', type=str, default='test.txt')
-        arg_parser.add_argument('--heuristic', action='store', dest='heuristic', type=str, default='H1')
+        arg_parser.add_argument('--heuristic', action='store', dest='heuristic', type=str, default='H3')
 
         arguments = arg_parser.parse_args(argv)
         file_name = arguments.file_name
         heuristic = arguments.heuristic
         puzzle_dict = read_file(file_name)
 
+        #investigation_node = []
+        #investigation_time = []
+
+        #for j in range(5):
+
+            #node_count = 0
         for i in puzzle_dict.keys():
 
+            #node_count = 0
             puzzle = puzzle_dict[i]
 
             if i != 0:
@@ -833,7 +838,12 @@ def main(argv=None):
                 print('*** Done! ***\nThe solution is printed out below:')
                 print_puzzle(solution)
                 print("The puzzle was solved in {} seconds.".format(ending_time - starting_time))
+                #investigation_node.append(node_count)
+                #investigation_time.append(ending_time - starting_time)
             print('Visited {} nodes.'.format(node_count))
+
+        #print("Average number of node is {}".format(np.mean(investigation_node, dtype=np.float64)))
+        #print("Average number of time is {}".format(np.mean(investigation_time, dtype=np.float64)))
 
 
 if __name__ == '__main__':
