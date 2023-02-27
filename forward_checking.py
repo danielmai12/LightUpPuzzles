@@ -36,11 +36,11 @@ def forward_checking(puzzle, domain, empty_cells, wall_cells, heuristic):
     next_potential_cells = []
 
     # Check input for the heuristic to use
-    if heuristic == 'h1':
+    if heuristic == 'H1':
         next_potential_cells = h1(puzzle, empty_cells)  # Find most constrained
-    elif heuristic == 'h2':
+    elif heuristic == 'H2':
         next_potential_cells = h2(puzzle, empty_cells)  # Find most constraining
-    elif heuristic == 'h3':
+    elif heuristic == 'H3':
         next_potential_cells = h3(puzzle, empty_cells)  # Hybrid
     else:
         print('\n*** ERROR *** Heuristic must be either "most_constrained", "most_constraining" or "hybrid".')
@@ -797,7 +797,7 @@ def main(argv=None):
 
         arg_parser = argparse.ArgumentParser()
         arg_parser.add_argument('--p', action='store', dest='file_name', type=str, default='test.txt')
-        arg_parser.add_argument('--heuristic', action='store', dest='heuristic', type=str, default='h1')
+        arg_parser.add_argument('--heuristic', action='store', dest='heuristic', type=str, default='H1')
 
         arguments = arg_parser.parse_args(argv)
         file_name = arguments.file_name
@@ -815,7 +815,7 @@ def main(argv=None):
             print_puzzle(puzzle)
 
             starting_time = time.time()
-            solution = solve_puzzle(puzzle, arguments.heuristic)
+            solution = solve_puzzle(puzzle, heuristic)
             ending_time = time.time()
 
             print()
