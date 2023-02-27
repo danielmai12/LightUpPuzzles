@@ -52,7 +52,7 @@ def forward_checking(puzzle, domain, empty_cells, wall_cells, heuristic):
     if len(next_potential_cells) >= 1:
         next_cell = next_potential_cells[random.randint(0, len(next_potential_cells) - 1)]
     else:    # We have no empty cell to consider, and the puzzle is still not solved, so backtrack here!
-        #print("backtrack as we have no empty cell to work with")
+
         return 'backtrack'
 
     # remove the cell chosen above from the list of temporary empty cells
@@ -91,7 +91,7 @@ def forward_checking(puzzle, domain, empty_cells, wall_cells, heuristic):
 def check_wall_feasibility(puzzle, domain, wall_cells):
     """
     # Check the surrounding of each wall
-    # Return true if for each wall, the number of cells around it that could accept a bulb is lmore than or euqal
+    # Return true if for each wall, the number of cells around it that could accept a bulb is more than or equal
     # to wall value
     :param puzzle: List[List[str]]
     :param domain: List[List[List[String]]] - The domain of each cell. Domain values are "wall", "_" or "b
@@ -780,11 +780,6 @@ def solve_puzzle(puzzle, heuristic):
 
     status = pre_process_puzzle(puzzle, domain_of_empty_cell, empty_cells)
 
-    print('puzzle after pre-process')
-    print_puzzle(puzzle)
-    print('domain after preprocess')
-    print_domain(domain_of_empty_cell)
-
     wall_cells = get_wall_cells(puzzle)
 
     if status:
@@ -801,33 +796,44 @@ def main(argv=None):
         argv = sys.argv[1:]
 
         arg_parser = argparse.ArgumentParser()
+        arg_parser.add_argument('--p', action='store', dest='file_name', type=str, default='test.txt')
         arg_parser.add_argument('--heuristic', action='store', dest='heuristic', type=str, default='h1')
 
         arguments = arg_parser.parse_args(argv)
+        file_name = arguments.file_name
+        heuristic = arguments.heuristic
+        puzzle_dict = read_file(file_name)
 
-        puzzle = read_file("test.txt").get(0)
+        for i in puzzle_dict.keys():
 
-        print('The puzzle is:')
-        print_puzzle(puzzle)
+            puzzle = puzzle_dict[i]
 
-        starting_time = time.time()
-        solution = solve_puzzle(puzzle, arguments.heuristic)
-        ending_time = time.time()
+            if i != 0:
+                print()
 
-        if solution == 'Too many nodes. Timeout!':
-            print('Number of nodes processed is too high!! Timeout!\nIt took {} seconds.'.format(ending_time - starting_time))
+            print('The puzzle is:')
+            print_puzzle(puzzle)
 
-        elif solution == 'stop':
-            print('Please retry!')
-        elif solution == 'failure':
-            print('Fail to solve this puzzle. Seems like it\'s unsolvable!!')
+            starting_time = time.time()
+            solution = solve_puzzle(puzzle, arguments.heuristic)
+            ending_time = time.time()
 
-        else:
             print()
-            print('*** Done! ***\nThe solution is printed out below:')
-            print_puzzle(solution)
-            print("The puzzle was solved in {} seconds.".format(ending_time - starting_time))
-        print('Visited {} nodes.'.format(node_count))
+
+            if solution == 'Too many nodes. Timeout!':
+                print('Number of nodes processed is too high!! Timeout!\nIt took {} seconds.'.format(ending_time - starting_time))
+
+            elif solution == 'stop':
+                print('Please retry!')
+
+            elif solution == 'failure':
+                print('Fail to solve this puzzle. Seems like it\'s unsolvable!!')
+
+            else:
+                print('*** Done! ***\nThe solution is printed out below:')
+                print_puzzle(solution)
+                print("The puzzle was solved in {} seconds.".format(ending_time - starting_time))
+            print('Visited {} nodes.'.format(node_count))
 
 
 if __name__ == '__main__':
