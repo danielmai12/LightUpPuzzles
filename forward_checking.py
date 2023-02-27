@@ -802,12 +802,6 @@ def main(argv=None):
         heuristic = arguments.heuristic
         puzzle_dict = read_file(file_name)
 
-        #investigation_node = []
-        #investigation_time = []
-
-        #for j in range(5):
-
-            #node_count = 0
         for i in puzzle_dict.keys():
 
             #node_count = 0
@@ -838,13 +832,7 @@ def main(argv=None):
                 print('*** Done! ***\nThe solution is printed out below:')
                 print_puzzle(solution)
                 print("The puzzle was solved in {} seconds.".format(ending_time - starting_time))
-                #investigation_node.append(node_count)
-                #investigation_time.append(ending_time - starting_time)
             print('Visited {} nodes.'.format(node_count))
-
-        #print("Average number of node is {}".format(np.mean(investigation_node, dtype=np.float64)))
-        #print("Average number of time is {}".format(np.mean(investigation_time, dtype=np.float64)))
-
 
 if __name__ == '__main__':
     main()

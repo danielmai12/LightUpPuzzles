@@ -21,23 +21,23 @@ The following tables are the average number of nodes generated for playing size 
 --------------------------------------------------------------------
 |   Backtrack   |       H3      |      10x10      |                |
 --------------------------------------------------------------------
-|    Forward    |       H1      |       6x6       |                |
+|    Forward    |       H1      |       6x6       |        1       |
 --------------------------------------------------------------------
-|    Forward    |       H1      |       8x8       |                |
+|    Forward    |       H1      |       8x8       |        9       |
 --------------------------------------------------------------------
-|    Forward    |       H1      |      10x10      |                |
+|    Forward    |       H1      |      10x10      |        56     |
 --------------------------------------------------------------------
-|    Forward    |       H2      |       6x6       |                |
+|    Forward    |       H2      |       6x6       |        1       |
 --------------------------------------------------------------------
-|    Forward    |       H2      |       8x8       |                |
+|    Forward    |       H2      |       8x8       |        3       |
 --------------------------------------------------------------------
-|    Forward    |       H2      |      10x10      |                |
+|    Forward    |       H2      |      10x10      |        3430    |
 --------------------------------------------------------------------
-|    Forward    |       H3      |       6x6       |                |
+|    Forward    |       H3      |       6x6       |        1       |
 --------------------------------------------------------------------
-|    Forward    |       H3      |       8x8       |                |
+|    Forward    |       H3      |       8x8       |        6       |
 --------------------------------------------------------------------
-|    Forward    |       H3      |      10x10      |                |
+|    Forward    |       H3      |      10x10      |        501     |
 --------------------------------------------------------------------
 
 The following tables are the average number of nodes  and runtime generated for playing size field
@@ -64,21 +64,39 @@ The following tables are the average number of nodes  and runtime generated for 
 ------------------------------------------------------------------------------------
 |   Backtrack   |       H3      |       48        |                |               |
 ------------------------------------------------------------------------------------
-|    Forward    |       H1      |       12        |                |               |
+|    Forward    |       H1      |       12        | Time out (500k)|  223.6458439  |
 ------------------------------------------------------------------------------------
-|    Forward    |       H1      |       24        |                |               |
+|    Forward    |       H1      |       24        | Time out (500k)|  241.2856581  |
 ------------------------------------------------------------------------------------
-|    Forward    |       H1      |       48        |                |               |
+|    Forward    |       H1      |       48        | Time out (500k)|  0.0153059    |
 ------------------------------------------------------------------------------------
-|    Forward    |       H2      |       12        |                |               |
+|    Forward    |       H2      |       12        | Time out (500k)|  235.5793259  |
 ------------------------------------------------------------------------------------
-|    Forward    |       H2      |       24        |                |               |
+|    Forward    |       H2      |       24        | Time out (500k)|  292.7051255  |
 ------------------------------------------------------------------------------------
-|    Forward    |       H2      |       48        |                |               |
+|    Forward    |       H2      |       48        |      48        |  0.0349233    |
 ------------------------------------------------------------------------------------
-|    Forward    |       H3      |       12        |                |               |
+|    Forward    |       H3      |       12        |Time out (500k) |    235.5793259|
 ------------------------------------------------------------------------------------
-|    Forward    |       H3      |       24        |                |               |
+|    Forward    |       H3      |       24        |      55        |    0.0398933  |
 ------------------------------------------------------------------------------------
-|    Forward    |       H3      |       48        |                |               |
+|    Forward    |       H3      |       48        |      14        |    0.014955   |
 ------------------------------------------------------------------------------------
+
+
+** Summary for Forward Checking **
+On average, the runtime is H3 < H1 < H2. This implementation of forward checking can handle up to 10x10 with high probability of
+success. However, on larger puzzle size, the chane of the searching algorithm times out is proportionally higher.
+
+Number of walls on a puzzle, as well as wall value distribution has significant impact on running time. On a same puzzle size, as the
+number of wall increases, the number of empty cells decreases linearly, which leads to less branching. Also, more walls means more
+constraints and therefore, less options to branch to. Similarly, if wall of value 0, 4 and 3 appears with high possibility, more empty
+cells are ruled out (its domain of value decrease to 1), which also improve running time for the same reason.
+
+Pre-processing the puzzle for trivia answers also contribute greatly in reducing running time. Preprocessing reduces the number of empty
+cells to consider. In tandem with forward checking and constraint propagation it also reduces the value domain of unsolved cells.
+
+There is also a factor of randomness in the implementation, as some large puzzle tends to time-out most of the attempts, but could be solved
+in a small portion of attempts. Similarly, some puzzle sometimes require a significantly higher number of node to solved than usual. This
+has to do with the randomly chosen of the next candidate, as some candidate leads to an answer while other leads to dead-end. Therefore,
+probability distribution between feasible candidate and infeasible candidates is also a factor to consider
