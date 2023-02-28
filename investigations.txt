@@ -104,9 +104,9 @@ Pre-processing the puzzle for trivia answers also contribute greatly in reducing
 cells to consider. In tandem with forward checking and constraint propagation it also reduces the value domain of unsolved cells.
 
 There is also a factor of randomness in the implementation, as some large puzzle tends to time-out most of the attempts, but could be solved
-in a small portion of attempts. Similarly, some puzzle sometimes require a significantly higher number of node to solved than usual. This
+in a small portion of attempts. Similarly, some puzzle sometimes require a significantly higher number of node to solve than usual. This
 has to do with the randomly chosen of the next candidate, as some candidate leads to an answer while other leads to dead-end. Therefore,
-probability distribution between feasible candidate and infeasible candidates is also a factor to consider
+probability distribution between feasible candidates and infeasible candidates is also a factor to consider
 
 
 *** No bugs found or detected - results are correct ***
