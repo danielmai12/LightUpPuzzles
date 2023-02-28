@@ -84,6 +84,13 @@ The following tables are the average number of nodes  and runtime generated for 
 ------------------------------------------------------------------------------------
 
 
+** Summary for Backtrack **
+Overall, the backtracking algorithm performs poorly compared to forward checking algorithm and with board size large enough (12),
+most of the time, it is timeout for backtracking algorithm.
+
+There is an update for backtracking algorithm is that we use the trivial solver to help fill in any place that has number of available
+neighbors equal to the number of the wall immediately, which helps to solve 8x8 and 10x10 faster (not time out) in this case
+
 ** Summary for Forward Checking **
 On average, the runtime is H3 < H1 < H2. This implementation of forward checking can handle up to 10x10 with high probability of
 success. However, on larger puzzle size, the chance of the searching algorithm times out is proportionally higher.
@@ -100,3 +107,6 @@ There is also a factor of randomness in the implementation, as some large puzzle
 in a small portion of attempts. Similarly, some puzzle sometimes require a significantly higher number of node to solved than usual. This
 has to do with the randomly chosen of the next candidate, as some candidate leads to an answer while other leads to dead-end. Therefore,
 probability distribution between feasible candidate and infeasible candidates is also a factor to consider
+
+
+*** No bugs found or detected - results are correct ***
